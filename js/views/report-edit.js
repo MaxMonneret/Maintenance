@@ -643,6 +643,16 @@ export async function renderReportEditor(view, id) {
     if (res) { r.hours = (await api.reports.full(r.id)).hours; drawHours(); }
   });
 
+  // « Aperçu / PDF » : termine l'enregistrement en cours avant d'ouvrir l'aperçu,
+  // sinon les dernières lignes saisies (ou dictées) n'apparaissent pas dans le PDF
+  view.addEventListener('click', async e => {
+    const a = e.target.closest('a[href$="/print"]'); if (!a || ro) return;
+    e.preventDefault();
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
+    await waitIdle();
+    location.hash = a.getAttribute('href');
+  });
+
   // Enregistre avant de quitter la page
   return () => { if (saveTimer) { clearTimeout(saveTimer); save(); } };
 }
