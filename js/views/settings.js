@@ -44,7 +44,7 @@ export async function renderSettings(view) {
         <div class="field"><span>${esc(t('theme'))}</span>
           <div class="seg" id="theme">${['auto', 'light', 'dark'].map(x => `<button class="${x === theme ? 'on' : ''}" data-th="${x}">${esc(t('theme_' + x))}</button>`).join('')}</div></div>
         <div class="row" style="justify-content:flex-end"><button class="btn primary" id="save-me">${esc(t('save'))}</button></div>
-        ${LOCAL ? '' : `<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">
+        ${`<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">
         <h3>${esc(t('change_password'))}</h3>
         <form id="pw-form" onsubmit="return false">${formHTML([
           { name: 'current_password', label: t('current_password'), type: 'password', required: true, autocomplete: 'current-password' },
@@ -181,7 +181,7 @@ export async function renderSettings(view) {
     { name: 'role', label: t('role'), type: 'select', options: ['technician', 'manager', 'admin'].map(r => [r, t('role_' + r)]) },
     { name: 'country', label: t('country'), type: 'select', options: COUNTRIES },
     { name: 'lang', label: t('language'), type: 'select', options: Object.entries(LANGS) },
-    ...(LOCAL ? [] : isNew ? [{ name: 'password', label: t('temp_password'), required: true }]
+    ...(isNew ? [{ name: 'password', label: t('temp_password'), required: true }]
       : [{ name: 'active', label: t('status'), type: 'select', options: [['1', t('active')], ['0', t('inactive')]] },
         { name: 'password', label: t('reset_password'), placeholder: '—' }])
   ];

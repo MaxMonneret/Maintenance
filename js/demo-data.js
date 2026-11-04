@@ -88,14 +88,22 @@ export function buildDemo() {
     { id: 1, name: 'Énergie Démo SA', country: 'FR', address: '12 rue de l’Industrie, 69000 Lyon', contact: 'M. Bernard', phone: '+33 4 00 00 00 00', email: 'contact@energie-demo.example' },
     { id: 2, name: 'Papeterie Démo', country: 'FR', address: 'Zone industrielle, 88000 Épinal', contact: 'Mme Laurent', phone: '+33 3 00 00 00 00', email: 'maintenance@papeterie-demo.example' },
     { id: 3, name: 'North Sea Demo Ltd', country: 'UK', address: 'Aberdeen, Scotland', contact: 'Mr. Campbell', phone: '+44 1224 000000', email: 'ops@northsea-demo.example' },
-    { id: 4, name: 'Gulf Demo Refining', country: 'US', address: 'Houston, TX', contact: 'Ms. Garcia', phone: '+1 713 000 0000', email: 'maint@gulf-demo.example' }
+    { id: 4, name: 'Gulf Demo Refining', country: 'US', address: 'Houston, TX', contact: 'Ms. Garcia', phone: '+1 713 000 0000', email: 'maint@gulf-demo.example' },
+    { id: 5, name: 'Cimenterie Démo', country: 'FR', address: 'Port Ouest, 59140 Dunkerque', contact: 'M. Lefebvre', phone: '+33 3 00 00 00 01', email: 'maintenance@ciment-demo.example' },
+    { id: 6, name: 'Sucrerie Démo', country: 'FR', address: 'Route de Douai, 62000 Arras', contact: 'Mme Caron', phone: '+33 3 00 00 00 02', email: 'energie@sucrerie-demo.example' },
+    { id: 7, name: 'Demo Shipyard Ltd', country: 'UK', address: 'Portsmouth, Hampshire', contact: 'Mr. Hughes', phone: '+44 23 0000 0000', email: 'fleet@shipyard-demo.example' },
+    { id: 8, name: 'Aciérie Démo', country: 'FR', address: 'Zone industrielle, 13270 Fos-sur-Mer', contact: 'M. Garnier', phone: '+33 4 00 00 00 03', email: 'laminoir@acier-demo.example' }
   ].map(x => ({ ...x, archived: 0 }));
   const sites = [
     { id: 1, client_id: 1, name: 'Centrale thermique – Unité 2', city: 'Lyon', country: 'FR', contact: 'M. Petit (chef de quart)' },
     { id: 2, client_id: 1, name: 'Station de pompage Est', city: 'Mâcon', country: 'FR', contact: 'M. Roux' },
     { id: 3, client_id: 2, name: 'Machine à papier PM3', city: 'Épinal', country: 'FR', contact: 'Mme Laurent, M. Henry' },
     { id: 4, client_id: 3, name: 'Platform Alpha', city: 'Offshore', country: 'UK', contact: 'OIM' },
-    { id: 5, client_id: 4, name: 'Refinery – Unit 400', city: 'Houston', country: 'US', contact: 'Area supervisor' }
+    { id: 5, client_id: 4, name: 'Refinery – Unit 400', city: 'Houston', country: 'US', contact: 'Area supervisor' },
+    { id: 6, client_id: 5, name: 'Usine – Four 2', city: 'Dunkerque', country: 'FR', contact: 'M. Lefebvre (resp. mécanique)' },
+    { id: 7, client_id: 6, name: 'Atelier énergie et diffusion', city: 'Arras', country: 'FR', contact: 'Mme Caron, M. Dupuis' },
+    { id: 8, client_id: 7, name: 'Patrol vessel P-12 – engine room', city: 'Portsmouth', country: 'UK', contact: 'Chief engineer' },
+    { id: 9, client_id: 8, name: 'Laminoir à chaud – train finisseur', city: 'Fos-sur-Mer', country: 'FR', contact: 'M. Garnier' }
   ].map(x => ({ ...x, archived: 0 }));
   const M = (id, site_id, serial, manufacturer, model, order_no, type, application, power_kw, ratio, speeds, commissioning_date, status, notes = '') =>
     ({ id, site_id, serial, manufacturer, model, order_no, type, application, power_kw, ratio, speeds, commissioning_date, status, notes, archived: 0 });
@@ -105,7 +113,17 @@ export function buildDemo() {
     M(3, 2, 'DM-2019-10457', 'Lufkin', 'EP-210', 'CD-19-1180', 'Réducteur épicycloïdal', 'Pompe d’alimentation', 2200, '5,6:1', '1490 / 266', '2019-03-02', 'in_service'),
     M(4, 3, 'DM-2008-03312', 'Comélor', 'MPL 400', '08-21004-01', 'Réducteur', 'Moteur – réducteur – enrouleuse', 450, '16:1', '1480 / 92', '2008-09-15', 'watch', 'Pitting évolutif sur la roue PV : prévoir le remplacement du train d’engrenages.'),
     M(5, 4, 'DM-2011-07720', 'Lufkin', 'PG-350', 'CD-11-0907', 'Multiplicateur', 'Compresseur gaz', 8400, '1:2,4', '1490 / 3576', '2011-09-20', 'in_service'),
-    M(6, 5, 'DM-2017-09901', 'Lufkin', 'HS-420', 'CD-17-2210', 'Réducteur à arbres parallèles', 'Compresseur centrifuge', 6000, '1:3,8', '1785 / 6783', '2017-11-05', 'down', 'Arrêt en attente de pièces (pignon GV).')
+    M(6, 5, 'DM-2017-09901', 'Lufkin', 'HS-420', 'CD-17-2210', 'Réducteur à arbres parallèles', 'Compresseur centrifuge', 6000, '1:3,8', '1785 / 6783', '2017-11-05', 'down', 'Arrêt en attente de pièces (pignon GV).'),
+    M(7, 6, 'DM-2009-05140', 'Lufkin', 'MC-1250', 'CD-09-0318', 'Réducteur de broyeur double hélicoïdal', 'Broyeur à boulets cru', 3200, '7,1:1', '990 / 139', '2009-04-20', 'in_service'),
+    M(8, 6, 'DM-2012-06677', 'Lufkin', 'PG-280', 'CD-12-0544', 'Réducteur parallèle', 'Ventilateur de tirage four', 1400, '1,5:1', '1490 / 993', '2012-02-14', 'in_service'),
+    M(9, 7, 'DM-2004-02281', 'Allen Gears', 'Allen TG-30', 'AG-04-1172', 'Réducteur turbine – alternateur', 'Turbo-alternateur 12 MW', 12000, '5,5:1', '8250 / 1500', '2004-09-01', 'in_service'),
+    M(10, 7, 'DM-2015-08810', 'Lufkin', 'SR-900', 'CD-15-0731', 'Réducteur à arbres parallèles', 'Diffuseur à betteraves', 560, '40:1', '1480 / 37', '2015-07-10', 'watch', 'Légère fuite au joint arbre PV, à surveiller pendant la campagne.'),
+    M(11, 4, 'DM-2013-07215', 'Allen Gears', 'Allen HC-44', 'AG-13-0420', 'Multiplicateur', 'Compresseur d’export gaz', 9500, '1:2,9', '3000 / 8700', '2013-05-28', 'in_service'),
+    M(12, 5, 'DM-2016-09102', 'Lufkin', 'N-1800', 'CD-16-1906', 'Multiplicateur', 'Compresseur de recyclage H2', 4500, '1:4,2', '1785 / 7497', '2016-10-03', 'in_service'),
+    M(13, 8, 'DM-2018-03390', 'Allen Gears', 'Allen MR-12', 'AG-18-0077', 'Réducteur marin', 'Propulsion – ligne d’arbre bâbord', 7000, '4,8:1', '1200 / 250', '2018-06-15', 'in_service'),
+    M(14, 8, 'DM-2018-03391', 'Allen Gears', 'Allen MR-12', 'AG-18-0077', 'Réducteur marin', 'Propulsion – ligne d’arbre tribord', 7000, '4,8:1', '1200 / 250', '2018-06-15', 'in_service'),
+    M(15, 9, 'DM-2006-01968', 'Lufkin', 'LM-2200', 'CD-06-0215', 'Réducteur de laminoir', 'Cage finisseuse F3', 6500, '3,2:1', '600 / 187', '2006-03-30', 'watch', 'Hausse progressive de la température du palier GV côté moteur (+8 °C en 6 mois).'),
+    M(16, 3, 'DM-2010-04471', 'Lufkin', 'PG-120', 'CD-10-0610', 'Réducteur parallèle', 'Pompe de mélange PM3', 250, '2,5:1', '1490 / 596', '2010-11-08', 'in_service')
   ];
 
   const photos = []; // { id, report_id, filename, caption, data }
@@ -211,6 +229,73 @@ export function buildDemo() {
       header: { order_no: 'SO-' + year + '-1031', accompanied_by: 'None', direct_customer: 'North Sea Demo Ltd', end_user: 'North Sea Demo Ltd', installation_type: 'Electric motor – gear increaser – gas compressor', persons_met: 'Mr. Campbell (OIM)', line_of_business: 'Oil & Gas' } }, S);
   }
 
+  /* ---------- Historique des maintenances (rapports validés des années précédentes) ---------- */
+  const H = {
+    fr: {
+      commissioning: { title: 'Mise en service', purpose: 'Assistance à la mise en service : contrôle de l’installation, du lignage, du graissage et premier démarrage.',
+        appearance: 'Appareil neuf, peinture et protections en bon état.', concl: 'Mise en service réalisée, fonctionnement conforme.', reco: 'Vidange de rodage après 500 h de fonctionnement.\nPremière visite préventive à 12 mois.' },
+      preventive: { title: 'Visite préventive', purpose: 'Visite préventive programmée : inspection des dentures et des paliers, relevés de jeux, contrôle de l’huile.',
+        appearance: 'Carter propre, pas de fuite notable.', concl: 'Réducteur en bon état général, aucune anomalie bloquante.', reco: 'Poursuivre les analyses d’huile.\nProchaine visite préventive selon le plan de maintenance.' },
+      expertise: { title: 'Expertise', purpose: 'Expertise à la demande du client suite à une dérive des paramètres de fonctionnement (vibrations / températures).',
+        appearance: 'Traces d’huile sous le carter côté accouplement.', concl: 'Usure prononcée des paliers côté GV, denture correcte.', reco: 'Remplacer les coussinets GV lors du prochain arrêt.\nRenforcer la surveillance vibratoire (mensuelle).' },
+      curative: { title: 'Remplacement roulements et joints', purpose: 'Intervention corrective : remplacement des roulements et des joints d’étanchéité suite à une fuite et un bruit anormal.',
+        appearance: 'Fuite d’huile au joint arbre PV, encrassement important.', concl: 'Roulements et joints remplacés, jeux remis dans les tolérances.', reco: 'Contrôler l’étanchéité après 100 h.\nAnalyse d’huile à 3 mois.' },
+      oil: ['Huile claire, analyse conforme.', 'Huile légèrement oxydée, vidange recommandée.', 'Présence de fines particules sur le bouchon magnétique.'],
+      bearings: ['Roulements / paliers sans défaut apparent.', 'Légères traces d’usure sur les galets, sans gravité.', 'Coussinets marqués, jeu en limite haute.'],
+      gears: ['Portée de denture correcte, pas de pitting.', 'Micro-pitting localisé en pied de dent, à surveiller.', 'Bonne portée sur toute la largeur.'],
+      parts: [['Roulement (PV)', '2', '22318-E1-XL', '', 'Atelier'], ['Roulement (GV)', '2', '22222-E1-XL', '', 'Atelier'], ['Bague d’étanchéité', '2', '–', '', 'Atelier']]
+    },
+    en: {
+      commissioning: { title: 'Commissioning', purpose: 'Commissioning assistance: installation, alignment and lubrication checks, first start-up.',
+        appearance: 'New unit, paint and protections in good condition.', concl: 'Commissioning completed, operation as expected.', reco: 'Running-in oil change after 500 h.\nFirst preventive visit at 12 months.' },
+      preventive: { title: 'Preventive visit', purpose: 'Scheduled preventive visit: gear and bearing inspection, clearance readings, oil check.',
+        appearance: 'Clean casing, no significant leak.', concl: 'Gearbox in good overall condition, no blocking issue.', reco: 'Continue oil analysis.\nNext preventive visit as per maintenance plan.' },
+      expertise: { title: 'Condition assessment', purpose: 'Assessment requested by the customer after a drift of operating parameters (vibration / temperatures).',
+        appearance: 'Oil traces under the casing on the coupling side.', concl: 'Significant wear of HS journal bearings, gear teeth acceptable.', reco: 'Replace HS bearings at next shutdown.\nIncrease vibration monitoring (monthly).' },
+      curative: { title: 'Bearing and seal replacement', purpose: 'Corrective work: replacement of bearings and seals after an oil leak and abnormal noise.',
+        appearance: 'Oil leak at LS shaft seal, heavy fouling.', concl: 'Bearings and seals replaced, clearances back within tolerance.', reco: 'Check sealing after 100 h.\nOil analysis in 3 months.' },
+      oil: ['Clear oil, analysis compliant.', 'Slightly oxidised oil, oil change recommended.', 'Fine particles on the magnetic plug.'],
+      bearings: ['Bearings with no visible defect.', 'Slight roller wear, not critical.', 'Journal bearings marked, clearance at upper limit.'],
+      gears: ['Good tooth contact, no pitting.', 'Localised micro-pitting at tooth root, to be monitored.', 'Good contact across the full face width.'],
+      parts: [['Bearing (LS)', '2', '22318-E1-XL', '', 'Workshop'], ['Bearing (HS)', '2', '22222-E1-XL', '', 'Workshop'], ['Shaft seal', '2', '–', '', 'Workshop']]
+    }
+  };
+  const perYear = {};
+  const histNum = y => `RI-${y}-${String(100 + (perYear[y] = (perYear[y] || 0) + 1)).padStart(4, '0')}`;
+  let rid = reports.length;
+  for (const m of machines) {
+    const site = sites.find(x => x.id === m.site_id); const client = clients.find(x => x.id === site.client_id);
+    const lang = ['UK', 'US'].includes(site.country) ? 'en' : 'fr';
+    const L = H[lang]; const tech = lang === 'en' ? 3 : 2;
+    const y0 = Number(m.commissioning_date.slice(0, 4));
+    const events = [['commissioning', m.commissioning_date]];
+    for (let y = y0 + 1 + (m.id % 2); y < year; y += 2 + (m.id % 2)) events.push(['preventive', `${y}-${String(3 + (m.id * 2 + y) % 8).padStart(2, '0')}-${String(5 + (m.id + y) % 20).padStart(2, '0')}`]);
+    if (m.status !== 'in_service' || m.id % 3 === 0) {
+      const y = Math.max(y0 + 2, year - 1 - (m.id % 3));
+      if (y < year) events.push([m.id % 2 ? 'expertise' : 'curative', `${y}-${String(1 + m.id % 11).padStart(2, '0')}-${String(10 + m.id % 15).padStart(2, '0')}`]);
+    }
+    events.sort((a, b) => a[1].localeCompare(b[1]));
+    for (const [type, date] of events.slice(-5)) {
+      const k = L[type]; const n = (m.id + Number(date.slice(0, 4))) % 3;
+      const { S, main, sub } = build(m, lang);
+      main('equipment').rows[0][4] = type === 'commissioning' ? '0' : String((Number(date.slice(0, 4)) - y0) * 7800);
+      main('purpose').text = k.purpose; main('appearance').text = k.appearance;
+      sub('inspection', 1).text = L.oil[type === 'commissioning' ? 0 : n];
+      sub('inspection', 2).text = type === 'expertise' ? L.bearings[2] : L.bearings[type === 'commissioning' ? 0 : n % 2];
+      sub('inspection', 3).text = L.gears[type === 'commissioning' ? 2 : n];
+      if (type !== 'commissioning') sub('disassembly', 1).rows = sub('disassembly', 1).rows.map((r, i) => [r[0], ['0,31 mm', '0,28 mm', '0,33 mm'][(i + n) % 3], '0,25 – 0,40 mm']);
+      if (type === 'curative') main('parts').rows = L.parts.map(x => [...x.slice(0, 3), `CMD-${date.slice(2, 4)}${m.id}`, x[4]]);
+      main('tests').text = type === 'expertise' ? '' : (lang === 'en' ? 'Run test 1 h: vibration below 2.5 mm/s, bearing temperatures stable.' : 'Essai 1 h : vibrations < 2,5 mm/s, températures paliers stabilisées.');
+      main('conclusions').text = k.concl; main('recommendations').text = k.reco;
+      main('log').rows = [[fr(date), k.purpose.split(':')[0] + '.', '']];
+      const days = type === 'curative' ? 2 : type === 'preventive' ? 1 : 0;
+      rep({ id: ++rid, number: histNum(date.slice(0, 4)), machine_id: m.id, date, end_date: days ? iso(new Date(new Date(date).getTime() + days * 864e5)) : null,
+        type, status: 'validated', title: `${k.title} – ${m.model}`, technicians: [tech], created_by: tech, validated_by: 4,
+        header: { order_no: `${lang === 'en' ? 'SO' : 'OV'}-${date.slice(0, 4)}-${String(300 + rid).padStart(4, '0')}`, accompanied_by: '', direct_customer: client.name, end_user: client.name,
+          installation_type: m.application, persons_met: site.contact, line_of_business: '' } }, S);
+    }
+  }
+
   /* Heures */
   const timesheets = []; let tid = 0;
   const ts = (user_id, date, kind, hours, report_id = null, note = null, status = 'entered') =>
@@ -222,10 +307,32 @@ export function buildDemo() {
   ts(3, daysAgo(2), 'travel', 3, 4, 'Helicopter transfer'); ts(3, daysAgo(2), 'site', 6, 4); ts(3, daysAgo(1), 'site', 10, 4);
   ts(4, daysAgo(0), 'office', 3, null, 'Validation des rapports');
 
+  /* Planning : semaine dernière, semaine en cours, deux semaines à venir */
+  const planning = []; let pid = 0;
+  const monday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })();
+  const day = n => iso(new Date(monday.getTime() + n * 864e5));   // n = décalage depuis le lundi de la semaine en cours
+  const pl = (user_id, s, e, kind, title, machine_id = null, status = 'planned', report_id = null, notes = null) =>
+    planning.push({ id: ++pid, user_id, start_date: day(s), end_date: day(e), kind, status, title, machine_id, report_id, notes, created_by: 4 });
+  pl(2, -7, -5, 'intervention', 'Remplacement roulements MPL 400', 4, 'done', 2);
+  pl(2, -4, -4, 'office', 'Rédaction rapport + préparation pièces', null, 'done');
+  pl(3, -7, -7, 'travel', 'Transfert hélicoptère Aberdeen → Platform Alpha', null, 'done');
+  pl(3, -6, -3, 'intervention', 'Révision PG-350 – Platform Alpha', 5, 'done');
+  pl(2, 0, 1, 'intervention', 'Expertise vibrations palier GV', 2, 'confirmed', 3, 'Accès tranche 2 : badge à retirer au poste de garde.');
+  pl(2, 2, 2, 'office', 'Analyse des mesures vibratoires');
+  pl(2, 3, 4, 'training', 'Formation alignement laser');
+  pl(3, 0, 1, 'intervention', 'High vibration alarm – HS bearing NDE', 5, 'confirmed', 4);
+  pl(3, 2, 2, 'travel', 'Retour Aberdeen');
+  pl(3, 3, 4, 'standby', 'Astreinte UK');
+  pl(2, 7, 7, 'travel', 'Trajet Épinal');
+  pl(2, 8, 10, 'intervention', 'Remplacement train d’engrenages MPL 400', 4, 'planned', null, 'Pièces en commande – confirmer la livraison avec l’atelier.');
+  pl(3, 7, 11, 'leave', 'Congés');
+  pl(2, 14, 15, 'intervention', 'Visite préventive EP-210', 3, 'planned');
+  pl(3, 14, 18, 'intervention', 'Expertise HS-420 – Refinery Unit 400', 6, 'planned', null, 'Visa US et habilitations raffinerie à vérifier.');
+
   return {
     format: 'fieldservice-export', version: 1, demo: true,
     tables: {
-      users, clients, sites, machines, reports, timesheets,
+      users, clients, sites, machines, reports, timesheets, planning,
       settings: { company_name: 'Lufkin Gears · Allen Gears (démo)', company_address: '1 rue de l’Exemple\n70000 Démoville', company_contact: '+33 0 00 00 00 00 · service@demo.example', report_prefix: 'RI', logo: '' }
     },
     photos

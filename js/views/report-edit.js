@@ -6,6 +6,7 @@ import {
   resizeImage, debounce, isManager, countryFlag, avatar, fmtHours
 } from '../ui.js';
 import { machineForm } from './installed.js';
+import { autoSummary } from '../summary.js';
 
 const TYPES = ['preventive', 'curative', 'commissioning', 'expertise'];
 const KINDS = [['text', 'text', 'sk_text'], ['measures', 'table', 'sk_measures'], ['parts', 'box', 'sk_parts']];
@@ -85,6 +86,8 @@ async function renderNew(view) {
   let machine = null;
   if (params.get('machine')) { try { machine = await api.machines.get(params.get('machine')); } catch {} }
   let type = 'curative';
+  let plan = null;   // mission du planning à l'origine du rapport
+  if (params.get('plan')) { try { plan = await api.planning.get(params.get('plan')); } catch {} }
 
   view.innerHTML = `
   <div class="page">
@@ -98,9 +101,9 @@ async function renderNew(view) {
       <section class="card card-pad stack">
         <h2>2 · ${esc(t('intervention'))}</h2>
         <div class="form-grid">
-          <label class="field"><span>${esc(t('date'))}</span><input type="date" id="date" value="${todayISO()}"></label>
+          <label class="field"><span>${esc(t('date'))}</span><input type="date" id="date" value="${esc(plan ? plan.start_date : todayISO())}"></label>
           <label class="field"><span>${esc(t('order_no'))}</span><input type="text" id="order_no"></label>
-          <label class="field full"><span>${esc(t('purpose'))}</span><input type="text" id="title" placeholder="${esc(t('purpose'))}"></label>
+          <label class="field full"><span>${esc(t('purpose'))}</span><input type="text" id="title" placeholder="${esc(t('purpose'))}" value="${esc(plan ? plan.title || '' : '')}"></label>
         </div>
         <div class="field"><span>${esc(t('type'))}</span>
           <div class="chips" id="types">${TYPES.map(x => `<button class="chip ${x === type ? 'on' : ''}" data-type="${x}">${esc(t('rt_' + x))}</button>`).join('')}</div>
@@ -145,8 +148,10 @@ async function renderNew(view) {
       const r = await api.reports.create({
         machine_id: machine.id, type, date: $('#date', view).value, title: $('#title', view).value.trim(),
         technicians: [state.user.id], sections: standardSections(machine),
-        header: { ...defaultHeader(machine), order_no: $('#order_no', view).value.trim() }
+        header: { ...defaultHeader(machine), order_no: $('#order_no', view).value.trim() },
+        ...(plan ? { end_date: plan.end_date !== plan.start_date ? plan.end_date : '' } : {})
       });
+      if (plan) await api.planning.update(plan.id, { report_id: r.id }).catch(() => {});
       location.replace('#/reports/' + r.id);
     } catch (err) { toastError(err); e.target.disabled = false; }
   });
@@ -270,6 +275,15 @@ export async function renderReportEditor(view, id) {
         <div class="stack" id="sections"></div>
         ${ro || structured ? '' : `<div class="add-section"><span>${esc(t('add_section'))} :</span>
           ${KINDS.map(([k, ic, lab]) => `<button class="btn sm" data-add-kind="${k}">${icon(ic)} ${esc(t(lab))}</button>`).join('')}</div>`}
+        ${structured ? `
+        <section class="card card-pad stack summary-card">
+          <div class="row" style="justify-content:space-between">
+            <h2>${icon('sparkle')} ${esc(t('summary_title'))}</h2>
+            ${ro ? '' : `<button class="btn sm" id="gen-sum">${icon('sparkle')} ${esc(t('summary_generate'))}</button>`}
+          </div>
+          <p class="muted" style="font-size:13px">${esc(t('summary_hint'))}</p>
+          <textarea id="f-summary" rows="6" ${dis} placeholder="${esc(t('summary_ph'))}">${esc(r.header.summary || '')}</textarea>
+        </section>` : ''}
         <section class="card card-pad stack" id="sign-card"></section>
       </div>
       <aside class="editor-side">
@@ -313,6 +327,15 @@ export async function renderReportEditor(view, id) {
   /* ---------- Informations générales ---------- */
   const bind = (sel, key) => $(sel, view).addEventListener('input', e => { r[key] = e.target.value; queueSave(); });
   if (!ro) { bind('#f-title', 'title'); bind('#f-date', 'date'); bind('#f-end', 'end_date'); bind('#f-type', 'type'); }
+  const fSum = $('#f-summary', view);
+  if (fSum && !ro) {
+    fSum.addEventListener('input', () => { r.header.summary = fSum.value; queueSave(); });
+    $('#gen-sum', view).addEventListener('click', async () => {
+      if (fSum.value.trim() && !(await confirmBox(t('summary_replace'), t('summary_generate')))) return;
+      fSum.value = autoSummary(r);
+      fSum.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
   $('#header-fields', view).addEventListener('input', e => {
     const k = e.target.dataset.h; if (!k || ro) return;
     r.header[k] = e.target.value; queueSave();

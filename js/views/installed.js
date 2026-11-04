@@ -1,9 +1,10 @@
 /* Module 1 – Base installée : machines, clients et sites */
 import { api } from '../api.js';
+import { reportSummary } from '../summary.js';
 import { t } from '../i18n.js';
 import {
   state, icon, esc, $, $$, fmtDate, machineStatus, reportStatus, reportType, emptyState, formModal,
-  confirmBox, toast, isManager, countryFlag, COUNTRIES, debounce, avatar, userName
+  confirmBox, toast, isManager, countryFlag, COUNTRIES, debounce, avatar, userName, todayISO
 } from '../ui.js';
 
 const STATUSES = ['in_service', 'watch', 'down', 'stopped'];
@@ -145,6 +146,7 @@ export async function renderMachine(view, id) {
       </section>
       <section class="card">
         <div class="card-head"><h2>${esc(t('history'))}</h2><span class="tag">${m.reports.length} ${esc(t('interventions'))}</span></div>
+        <div class="mh-stats" id="mh-stats"></div>
         <div class="timeline">
           ${m.reports.length ? m.reports.map(r => `
             <a class="tl-item" href="#/reports/${r.id}">
@@ -152,6 +154,7 @@ export async function renderMachine(view, id) {
               <div style="flex:1;min-width:0">
                 <div class="row" style="gap:8px"><strong>${esc(fmtDate(r.date))}</strong>${reportType(r.type)}${reportStatus(r.status)}</div>
                 <div class="muted" style="font-size:13.5px"><span class="mono">${esc(r.number)}</span>${r.title ? ' · ' + esc(r.title) : ''}</div>
+                <div class="tl-sum" data-sum="${r.id}"></div>
                 <div class="avatars" style="margin-top:6px">${(r.technicians || []).map(uid => avatar(userName(uid))).join('')}</div>
               </div>
             </a>`).join('') : emptyState(t('none'), 'report')}
@@ -161,6 +164,22 @@ export async function renderMachine(view, id) {
   </div>`;
 
   $('#edit', view).addEventListener('click', async () => { if (await machineForm(m)) renderMachine(view, id); });
+
+  // Synthèse de chaque intervention, statistiques de maintenance et prochaines interventions planifiées
+  (async () => {
+    const stats = $('#mh-stats', view);
+    const byType = m.reports.reduce((a, r) => (a[r.type] = (a[r.type] || 0) + 1, a), {});
+    let next = [];
+    try { next = (await api.planning.list({ from: todayISO() })).filter(p => p.machine_id === m.id && p.status !== 'done'); } catch {}
+    if (stats) stats.innerHTML = `
+      <div><span>${esc(t('last_intervention'))}</span><strong>${m.reports[0] ? esc(fmtDate(m.reports[0].date)) : '—'}</strong></div>
+      <div><span>${esc(t('mh_next'))}</span><strong>${next[0] ? `<a href="#/planning">${esc(fmtDate(next[0].start_date))}</a> · ${esc(next[0].user_name || '')}` : '—'}</strong></div>
+      <div class="full">${Object.entries(byType).map(([k, n]) => `<span class="tag">${n} × ${esc(t('rt_' + k))}</span>`).join(' ') || ''}</div>`;
+    for (const r of m.reports.slice(0, 15)) {
+      const el = view.querySelector(`[data-sum="${r.id}"]`); if (!el) break;
+      try { el.textContent = reportSummary(await api.reports.full(r.id)); } catch {}
+    }
+  })();
   const arch = $('#archive', view);
   if (arch) arch.addEventListener('click', async () => {
     if (!(await confirmBox(t('confirm_archive'), t('archive')))) return;

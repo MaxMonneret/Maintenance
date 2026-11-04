@@ -15,9 +15,9 @@ async function toDataUrl(src) {
 }
 
 export async function exportAll(onProgress = () => {}) {
-  const [users, clients, sites, machines, reportList, timesheets, settings] = await Promise.all([
+  const [users, clients, sites, machines, reportList, timesheets, settings, planning] = await Promise.all([
     api.users.list(), api.clients.list({ archived: '1' }), api.sites.list({ archived: '1' }), api.machines.list({ archived: '1' }),
-    api.reports.list(), api.timesheets.list({ user_id: 'all' }), api.settings.get()
+    api.reports.list(), api.timesheets.list({ user_id: 'all' }), api.settings.get(), api.planning.list({}).catch(() => [])
   ]);
   const reports = [], photos = [];
   let i = 0;
@@ -39,6 +39,7 @@ export async function exportAll(onProgress = () => {}) {
       machines: strip(machines, ['site_name', 'city', 'site_address', 'site_country', 'site_contact', 'client_id', 'client_name', 'last_intervention', 'report_count', 'reports']),
       reports,
       timesheets: strip(timesheets, ['user_name', 'user_country', 'report_number', 'client_name', 'site_name']),
+      planning: strip(planning, ['user_name', 'serial', 'model', 'site_name', 'city', 'client_name', 'report_number']),
       settings
     },
     photos

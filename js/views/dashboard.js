@@ -1,9 +1,10 @@
 import { api, LOCAL } from '../api.js';
+import { upcomingCard } from './planning.js';
 import { t } from '../i18n.js';
 import { state, icon, esc, fmtDate, fmtHours, reportStatus, reportType, emptyState, isManager, todayISO } from '../ui.js';
 
 export async function renderDashboard(view) {
-  const d = await api.dashboard();
+  const [d, upcoming] = await Promise.all([api.dashboard(), upcomingCard()]);
   const first = state.user.name.split(' ')[0];
   view.innerHTML = `
   <div class="page">
@@ -55,6 +56,7 @@ ${LOCAL && !d.machines ? `
           </a>`).join('') : emptyState(t('none'), 'report')}
       </div>
     </section>
+    ${upcoming}
   </div>`;
   const ld = view.querySelector('#load-demo');
   if (ld) ld.addEventListener('click', async () => {

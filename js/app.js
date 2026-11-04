@@ -9,6 +9,8 @@ import { renderReports } from './views/reports.js';
 import { renderReportEditor } from './views/report-edit.js';
 import { renderReportPrint } from './views/report-print.js';
 import { renderHours } from './views/hours.js';
+import { renderPlanning } from './views/planning.js';
+import { initDictation } from './dictation.js';
 import { renderSettings } from './views/settings.js';
 
 const root = $('#root');
@@ -24,6 +26,7 @@ const ROUTES = [
   [/^\/reports\/(\d+)$/, renderReportEditor, 'reports'],
   [/^\/reports\/(\d+)\/print$/, renderReportPrint, 'reports', true],
   [/^\/hours$/, renderHours, 'hours'],
+  [/^\/planning$/, renderPlanning, 'planning'],
   [/^\/settings$/, renderSettings, 'settings']
 ];
 
@@ -31,6 +34,7 @@ const NAV = [
   ['dashboard', '#/', 'home', 'nav_dashboard'],
   ['installed', '#/machines', 'machine', 'nav_installed'],
   ['reports', '#/reports', 'report', 'nav_reports'],
+  ['planning', '#/planning', 'calendar', 'nav_planning'],
   ['hours', '#/hours', 'clock', 'nav_hours'],
   ['settings', '#/settings', 'settings', 'nav_settings']
 ];
@@ -158,4 +162,5 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.status !== 401) toastError(e.reason); });
 
 document.documentElement.lang = getLang();
+initDictation();
 start();

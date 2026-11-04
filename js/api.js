@@ -27,7 +27,7 @@ const idbPut = (store, key, val) => tx(store, 'readwrite', s => s.put(val, key))
 const idbDel = (store, key) => tx(store, 'readwrite', s => s.delete(key));
 
 const empty = () => ({
-  seq: {}, users: [], clients: [], sites: [], machines: [], reports: [], photos: [], timesheets: [],
+  seq: {}, users: [], clients: [], sites: [], machines: [], reports: [], photos: [], timesheets: [], planning: [],
   settings: { company_name: '', company_address: '', company_contact: '', report_prefix: 'RI', logo: '' }
 });
 
@@ -52,8 +52,22 @@ async function loadData(file) {
   if (!db.users.some(u => u.role === 'admin' && u.active)) {
     db.users.push({ id: nextId('users'), name: 'Administrateur', email: 'admin', role: 'admin', country: 'FR', lang: 'fr', active: 1 });
   }
+  // Démo : admin / admin, autres comptes / demo. Import : mot de passe provisoire « demo » à changer.
+  for (const u of db.users) if (!u.pass_hash) await setPassword(u, file.demo && u.email === 'admin' ? 'admin' : 'demo', !file.demo);
   setSession(null);
   await persist();
+}
+
+/* ---------- Mots de passe (hachés SHA-256 + sel, propres à cet appareil) ---------- */
+async function hashPw(password, salt) {
+  const data = new TextEncoder().encode(salt + ':' + password);
+  if (crypto.subtle) return [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))].map(b => b.toString(16).padStart(2, '0')).join('');
+  return 'plain:' + password;   // contexte non sécurisé (http sur le réseau local)
+}
+async function setPassword(u, password, mustChange) {
+  u.pass_salt = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  u.pass_hash = await hashPw(password, u.pass_salt);
+  u.must_change = mustChange ? 1 : 0;
 }
 
 /* ---------- Profil courant (choisi sur l'écran d'accueil, sans mot de passe) ---------- */
@@ -80,7 +94,7 @@ const isManager = () => ['manager', 'admin'].includes(me().role);
 const isAdmin = () => me().role === 'admin';
 const canEdit = r => isManager() || (r.status !== 'validated' && (r.created_by === me().id || (r.technicians || []).includes(me().id)));
 const publicUser = u => u && ({ id: u.id, name: u.name, email: u.email, role: u.role, country: u.country,
-  lang: u.lang, active: !!u.active, must_change: false });
+  lang: u.lang, active: !!u.active, must_change: !!u.must_change });
 const byId = (table, id) => db[table].find(x => x.id === Number(id));
 
 const FIELDS = {
@@ -103,6 +117,17 @@ function reportList(r) {
   return { id: r.id, number: r.number, date: r.date, type: r.type, status: r.status, title: r.title, machine_id: r.machine_id,
     technicians: r.technicians, updated_at: r.updated_at, serial: m.serial, model: m.model,
     site_name: s.name, site_id: s.id, client_name: c.name, client_id: c.id };
+}
+const PLAN_KEYS = ['user_id', 'start_date', 'end_date', 'kind', 'status', 'title', 'machine_id', 'report_id', 'notes'];
+function planClean(d) {
+  for (const k of ['machine_id', 'report_id', 'user_id']) if (d[k] !== undefined) d[k] = d[k] ? Number(d[k]) : null;
+  return d;
+}
+function planView(p) {
+  const u = byId('users', p.user_id) || {}; const m = byId('machines', p.machine_id) || {};
+  const s = byId('sites', m.site_id) || {}; const c = byId('clients', s.client_id) || {}; const r = byId('reports', p.report_id);
+  return { ...p, user_name: u.name, serial: m.serial, model: m.model, site_name: s.name, city: s.city, client_name: c.name,
+    report_number: r && r.number };
 }
 const isMine = r => r.created_by === me().id || (r.technicians || []).includes(me().id);
 const sortReports = (a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id;
@@ -164,10 +189,13 @@ const crudBase = table => ({
 });
 
 export const api = {
-  async login(email) {
+  async login(email, password) {
     await load();
-    const u = db.users.find(x => x.email === email && x.active);
-    if (!u) fail(401, 'Profil introuvable');
+    const u = db.users.find(x => (x.email || '').toLowerCase() === String(email || '').trim().toLowerCase() && x.active);
+    if (!u || !u.pass_hash || (await hashPw(String(password || ''), u.pass_salt)) !== u.pass_hash) {
+      await new Promise(r => setTimeout(r, 400));
+      fail(401, 'Identifiant ou mot de passe incorrect');
+    }
     setSession(u.id); return { user: publicUser(u) };
   },
   async logout() { setSession(null); return { ok: true }; },
@@ -175,7 +203,17 @@ export const api = {
   async isDemo() { await load(); return !!db.demo; },
   async resetDemo() { await load(); await loadData(buildDemo()); return { ok: true }; },
   async me() { await load(); return { user: publicUser(me()), settings: clone(db.settings) }; },
-  async updateMe(data) { await load(); Object.assign(me(), pick(data, ['name', 'lang', 'country'])); await persist(); return { user: publicUser(me()) }; },
+  async updateMe(data) {
+    await load();
+    const u = me();
+    Object.assign(u, pick(data, ['name', 'lang', 'country']));
+    if (data.new_password) {
+      if ((await hashPw(String(data.current_password || ''), u.pass_salt)) !== u.pass_hash) fail(400, 'Mot de passe actuel incorrect');
+      if (String(data.new_password).length < 4) fail(400, 'Le mot de passe doit contenir au moins 4 caractères');
+      await setPassword(u, data.new_password, false);
+    }
+    await persist(); return { user: publicUser(u) };
+  },
   async publicSettings() { await load(); return { company_name: db.settings.company_name, logo: db.settings.logo }; },
   settings: {
     async get() { await load(); return clone(db.settings); },
@@ -214,6 +252,8 @@ export const api = {
       if (!data.name) fail(400, 'Nom obligatoire');
       const u = { ...pick(data, ['name', 'email', 'role', 'country', 'lang']), id: nextId('users'), active: 1, must_change: 0 };
       if (!u.email) u.email = u.name.toLowerCase().replace(/\s+/g, '.');
+      if (db.users.some(x => (x.email || '').toLowerCase() === u.email.toLowerCase())) fail(400, 'Cet identifiant existe déjà');
+      await setPassword(u, data.password || 'demo', true);
       db.users.push(u); await persist(); return publicUser(u);
     },
     async update(id, data) {
@@ -223,7 +263,9 @@ export const api = {
       const d = pick(data, ['name', 'email', 'role', 'country', 'lang']);
       if (data.active !== undefined) d.active = data.active ? 1 : 0;
       if (u.id === me().id && (d.role && d.role !== 'admin' || d.active === 0)) fail(400, 'Vous ne pouvez pas retirer vos propres droits');
-      Object.assign(u, d); await persist(); return publicUser(u);
+      Object.assign(u, d);
+      if (data.password) await setPassword(u, data.password, true);
+      await persist(); return publicUser(u);
     },
     async remove(id) { return this.update(id, { active: 0 }); }
   },
@@ -277,6 +319,7 @@ export const api = {
       db.photos = db.photos.filter(p => p.report_id !== Number(id));
       db.reports = db.reports.filter(r => r.id !== Number(id));
       db.timesheets.forEach(t => { if (t.report_id === Number(id)) t.report_id = null; });
+      db.planning.forEach(p => { if (p.report_id === Number(id)) p.report_id = null; });
       await persist(); return { ok: true };
     }
   },
@@ -299,6 +342,38 @@ export const api = {
       await load();
       await idbDel('photos', Number(id));
       db.photos = db.photos.filter(p => p.id !== Number(id)); await persist(); return { ok: true };
+    }
+  },
+  planning: {
+    async list(q = {}) {
+      await load();
+      const from = q.from || '0000-01-01', to = q.to || '9999-12-31';
+      return clone(db.planning.filter(p => p.end_date >= from && p.start_date <= to
+        && (isManager() ? (!q.user_id || p.user_id === Number(q.user_id)) : p.user_id === me().id)).map(planView)
+        .sort((a, b) => a.start_date.localeCompare(b.start_date) || (a.user_name || '').localeCompare(b.user_name || '')));
+    },
+    async get(id) { await load(); const p = byId('planning', id); if (!p) fail(404, 'Introuvable'); return clone(planView(p)); },
+    async create(b) {
+      await load();
+      if (!isManager()) fail(403, 'Seul un responsable peut planifier');
+      const d = planClean(pick(b, PLAN_KEYS));
+      if (!d.user_id || !d.start_date) fail(400, 'Technicien et date obligatoires');
+      if (!d.end_date || d.end_date < d.start_date) d.end_date = d.start_date;
+      const p = { kind: 'intervention', status: 'planned', ...d, id: nextId('planning'), created_by: me().id, created_at: now() };
+      db.planning.push(p); await persist(); return clone(planView(p));
+    },
+    async update(id, b) {
+      await load();
+      const p = byId('planning', id); if (!p) fail(404, 'Introuvable');
+      const keys = isManager() ? PLAN_KEYS : p.user_id === me().id ? ['status', 'report_id', 'notes'] : fail(403, 'Droits insuffisants');
+      Object.assign(p, planClean(pick(b, keys)));
+      if (p.end_date < p.start_date) p.end_date = p.start_date;
+      await persist(); return clone(planView(p));
+    },
+    async remove(id) {
+      await load();
+      if (!isManager()) fail(403, 'Seul un responsable peut supprimer');
+      db.planning = db.planning.filter(p => p.id !== Number(id)); await persist(); return { ok: true };
     }
   },
   timesheets: {

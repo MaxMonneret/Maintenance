@@ -5,7 +5,8 @@ import { icon, esc, $, toastError, avatar, countryFlag, confirmBox } from '../ui
 export async function renderLogin(root, onSuccess) {
   let pub = {}, profiles = [];
   try { pub = await api.publicSettings(); } catch {}
-  if (LOCAL) try { profiles = await api.profiles(); } catch {}
+  let isDemo = false;
+  if (LOCAL) try { profiles = await api.profiles(); isDemo = await api.isDemo(); } catch {}
   const draw = () => {
     root.innerHTML = `
     <div class="login">
@@ -37,17 +38,26 @@ export async function renderLogin(root, onSuccess) {
         <div class="login-box">
           <img class="company-logo" src="${esc(pub.logo || 'img/logo.svg')}" alt="">
           <div class="row" style="justify-content:space-between">
-            <h1>${esc(t('choose_profile'))}</h1>
+            <h1>${esc(t('login_title'))}</h1>
             <select class="inline" id="lang" style="min-width:0;height:36px">
               ${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === getLang() ? 'selected' : ''}>${v}</option>`).join('')}
             </select>
           </div>
-          <div class="profiles">
-            ${profiles.map(u => `<button class="profile" data-email="${esc(u.email)}">${avatar(u.name)}
-              <span><strong>${esc(u.name)}</strong><small>${esc(t('role_' + u.role))} · ${countryFlag(u.country)} ${esc(u.country || '')}</small></span>
-              ${icon('right')}</button>`).join('')}
-          </div>
-          <p class="hint">${esc(t('demo_hint'))}</p>
+          <form class="stack" id="local-login" autocomplete="on" style="gap:14px">
+            <label class="field"><span>${esc(t('login_user'))}</span><input type="text" name="email" autocomplete="username" required></label>
+            <label class="field"><span>${esc(t('login_pass'))}</span><input type="password" name="password" autocomplete="current-password" required></label>
+            <button class="btn primary lg" type="submit">${esc(t('login_btn'))}</button>
+          </form>
+          ${isDemo ? `
+          <div class="demo-accounts">
+            <span>${esc(t('demo_accounts'))}</span>
+            <div class="profiles">
+              ${profiles.map(u => `<button class="profile" type="button" data-email="${esc(u.email)}" data-pw="${u.email === 'admin' ? 'admin' : 'demo'}">${avatar(u.name)}
+                <span><strong>${esc(u.name)}</strong><small>${esc(t('role_' + u.role))} · <span class="mono">${esc(u.email)}</span> / <span class="mono">${u.email === 'admin' ? 'admin' : 'demo'}</span></small></span>
+                ${icon('right')}</button>`).join('')}
+            </div>
+          </div>` : ''}
+          <p class="hint">${esc(t(isDemo ? 'demo_hint' : 'local_hint'))}</p>
           <button class="btn sm ghost" id="reset-demo" style="align-self:flex-start">${esc(t('demo_reset'))}</button>
         </div>` : `
         <form class="login-box" autocomplete="on">
@@ -67,9 +77,16 @@ export async function renderLogin(root, onSuccess) {
     </div>`;
     $('#lang', root).addEventListener('change', e => { setLang(e.target.value); draw(); });
     if (LOCAL) {
-      root.querySelector('.profiles').addEventListener('click', async e => {
+      const f = $('#local-login', root);
+      const go = async (email, pw) => {
+        const btn = $('button[type=submit]', f); btn.disabled = true;
+        try { await api.login(email, pw); await onSuccess(); } catch (err) { toastError(err); btn.disabled = false; f.password.select(); }
+      };
+      f.addEventListener('submit', e => { e.preventDefault(); go(f.email.value.trim(), f.password.value); });
+      const pr = root.querySelector('.profiles');
+      if (pr) pr.addEventListener('click', e => {
         const b = e.target.closest('[data-email]'); if (!b) return;
-        try { await api.login(b.dataset.email); await onSuccess(); } catch (err) { toastError(err); }
+        f.email.value = b.dataset.email; f.password.value = b.dataset.pw; go(b.dataset.email, b.dataset.pw);
       });
       $('#reset-demo', root).addEventListener('click', async () => {
         if (!(await confirmBox(t('demo_reset_confirm'), t('demo_reset')))) return;

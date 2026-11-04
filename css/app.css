@@ -481,3 +481,74 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .login-art .credits { position: absolute; right: 16px; bottom: 10px; font-size: 10.5px; color: rgba(255,255,255,.45); z-index: 1; }
 .login-art .credits a { color: inherit; text-decoration: underline; }
 .hero .hero-credit { position: absolute; right: 12px; bottom: 6px; font-size: 10px; color: rgba(255,255,255,.5); }
+
+/* ---- Planning ---- */
+.page.page-wide { max-width: 1500px; }
+.plan-legend { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.pk { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; border-left: 4px solid var(--pkc); background: var(--pkb); color: var(--ink); }
+.pk-intervention { --pkc: #289792; --pkb: #e2f3f2; }
+.pk-travel { --pkc: #2563a8; --pkb: #e6eff9; }
+.pk-training { --pkc: #7b4fc2; --pkb: #f0eafb; }
+.pk-office { --pkc: #6b7a75; --pkb: #eef1f0; }
+.pk-standby { --pkc: #b7791f; --pkb: #fdf3e1; }
+.pk-leave { --pkc: #a3a9a7; --pkb: repeating-linear-gradient(135deg, #f2f4f3 0 6px, #e7eae9 6px 12px); }
+:root[data-theme="dark"] .pk, :root[data-theme="dark"] .plan-chip { color: #10201c; }
+.plan-card { overflow: hidden; }
+.plan-scroll { overflow-x: auto; }
+.plan-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 900px; table-layout: fixed; }
+.plan-table th, .plan-table td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; }
+.plan-table thead th { background: var(--surface-2); padding: 8px 4px; font-weight: 600; text-align: center; position: sticky; top: 0; }
+.plan-table thead th span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.plan-table thead th strong { font-size: 16px; }
+.plan-table th.who { width: 190px; text-align: left; padding: 10px 12px; background: var(--surface); position: sticky; left: 0; z-index: 2; }
+.plan-table th.who small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 500; }
+.plan-table th.who strong { font-size: 13.5px; }
+.plan-table td { height: 74px; padding: 4px 2px; position: relative; cursor: default; }
+.plan-table td.we, .plan-table th.we { background: var(--surface-2); }
+.plan-table td.today, .plan-table th.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.plan-table td.conflict { background: var(--danger-soft); }
+.plan-warn { position: absolute; right: 4px; bottom: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.plan-chip { display: block; width: 100%; text-align: left; border: 0; border-left: 4px solid var(--pkc); background: var(--pkb); border-radius: 0; padding: 4px 6px; margin-bottom: 3px;
+  font: inherit; font-size: 12px; line-height: 1.25; cursor: pointer; color: var(--ink); position: relative; min-height: 30px; }
+.plan-chip.first { border-top-left-radius: 7px; border-bottom-left-radius: 7px; }
+.plan-chip.last { border-top-right-radius: 7px; border-bottom-right-radius: 7px; }
+.plan-chip.cont { border-left-color: transparent; }
+.plan-chip b { display: block; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-chip small { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.plan-chip.st-planned { outline: 1.5px dashed var(--pkc); outline-offset: -2px; }
+.plan-chip .done { position: absolute; right: 3px; top: 3px; color: var(--ok); font-style: normal; }
+.plan-chip .done .ic { width: 13px; height: 13px; }
+.plan-chip:hover { filter: brightness(.96); }
+.plan-table.dense td { height: 56px; }
+.plan-table.dense .plan-chip small { display: none; }
+.plan-table.dense thead th strong { font-size: 13px; }
+@media (max-width: 860px) { .plan-legend { margin-left: 0; } }
+
+/* ---- Dictée vocale ---- */
+.dict-wrap { position: relative; display: block; width: 100%; }
+.dict-wrap > textarea { width: 100%; padding-right: 46px; }
+.dict-tools { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; gap: 4px; }
+.dict-btn { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  display: grid; place-items: center; cursor: pointer; font: 700 12px/1 var(--font); padding: 0; }
+.dict-btn:hover { color: var(--accent); border-color: var(--accent); }
+.dict-btn .ic { width: 17px; height: 17px; }
+.dict-btn.mic.on { background: var(--danger); border-color: var(--danger); color: #fff; animation: pulse 1.2s infinite; }
+.dict-bubble { position: absolute; left: 8px; right: 50px; bottom: calc(100% + 6px); z-index: 30; display: flex; align-items: center; gap: 10px;
+  background: var(--brand); color: #fff; border-radius: 12px; padding: 8px 10px 8px 12px; box-shadow: var(--shadow-lg); font-size: 13.5px; }
+.dict-bubble .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b5e; flex: none; animation: pulse 1s infinite; }
+.dict-bubble .txt { flex: 1; min-width: 0; font-style: italic; }
+.dict-bubble .btn { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.25); }
+
+/* ---- Synthèse ---- */
+.summary-card { border-left: 4px solid var(--accent); }
+.tl-sum { white-space: pre-wrap; font-size: 13px; color: var(--ink); margin-top: 6px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.tl-sum:empty { display: none; }
+.mh-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.mh-stats span { display: block; font-size: 12px; color: var(--muted); font-weight: 550; }
+.mh-stats strong { font-weight: 600; font-size: 14px; }
+.mh-stats .full { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.demo-accounts { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.demo-accounts > span { font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.demo-accounts .profile { padding: 9px 12px; }

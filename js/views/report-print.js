@@ -4,6 +4,7 @@
 import { api } from '../api.js';
 import { t, sectionNumbers, tableCols, isTableKind } from '../i18n.js';
 import { icon, esc, fmtDate, fmtHours, userName, countryFlag } from '../ui.js';
+import { reportSummary } from '../summary.js';
 
 const nl2br = s => esc(s || '').replace(/\n/g, '<br>');
 const cssStr = s => String(s || '').replace(/["\\\n]/g, ' ');
@@ -100,6 +101,8 @@ export async function renderReportPrint(view, id) {
         ${row(t('purpose'), esc(r.title))}
       </tbody>
     </table>
+
+    ${structured ? `<section class="p-summary"><h3>${esc(t('summary_title'))}</h3><p class="p-text">${nl2br(reportSummary(r))}</p></section>` : ''}
 
     ${structured ? `<div class="p-band">${esc(t('summary_band'))}</div>` : `
     <section class="p-info">

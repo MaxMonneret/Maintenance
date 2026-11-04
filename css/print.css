@@ -83,3 +83,8 @@ body.printing { background: #e9edeb; }
 /* Logo de marque (large) au-dessus des coordonnées de l'entreprise */
 .p-company { flex-direction: column; gap: 3mm; }
 .p-company img { max-width: 90mm; max-height: 14mm; }
+
+/* Synthèse en tête de rapport */
+.p-summary { margin-top: 5mm; border: 1px solid var(--p-line); border-left: 4px solid var(--p-accent); border-radius: 2mm; padding: 3mm 4mm; background: #f6fbfb; break-inside: avoid; }
+.p-summary h3 { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .07em; color: var(--p-accent); margin: 0 0 1.5mm; }
+.p-summary .p-text { font-size: 9.5pt; }
