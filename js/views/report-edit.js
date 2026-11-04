@@ -1,5 +1,5 @@
 /* Module 2 – Création et édition d'un rapport d'intervention (sections modulaires) */
-import { api } from '../api.js';
+import { api, LOCAL } from '../api.js';
 import { t, standardSections, standardTitles, newSection, sectionNumbers, tableCols, isTableKind } from '../i18n.js';
 import {
   state, icon, esc, $, $$, fmtDate, todayISO, reportStatus, machineStatus, modal, confirmBox, toast, toastError,
@@ -41,7 +41,7 @@ async function machinePicker(container, initialMachineId, onPick) {
       </div>
       <div class="picker">
         <div class="picker-col"><span>1 · ${esc(t('client'))}</span><div class="pick-list">
-          ${clients.map(c => `<button data-client="${c.client_id}" class="${c.client_id === client ? 'on' : ''}">${esc(c.client_name)}</button>`).join('') || `<div class="empty">—</div>`}
+          ${clients.map(c => `<button data-client="${c.client_id}" class="${c.client_id === client ? 'on' : ''}">${esc(c.client_name)}</button>`).join('') || `<div class="empty">—${LOCAL && !machines.length ? `<br><a href="#/">${esc(t('demo_load'))}</a>` : ''}</div>`}
         </div></div>
         <div class="picker-col"><span>2 · ${esc(t('site'))}</span><div class="pick-list">
           ${client ? sites.map(s => `<button data-site="${s.site_id}" class="${s.site_id === site ? 'on' : ''}">${esc(s.site_name)}<small>${esc(s.city || '')} ${countryFlag(s.site_country)}</small></button>`).join('') || `<div class="empty">—</div>` : `<div class="empty">${esc(t('choose_client'))}</div>`}

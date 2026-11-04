@@ -1,6 +1,6 @@
 /* Service worker : met en cache l'interface pour un démarrage rapide et hors connexion.
    Les données (/api) et les photos passent toujours par le réseau. */
-const VERSION = 'fs-v5-gh';
+const VERSION = 'fs-v6-gh';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/app.css', './css/print.css',
   './js/app.js', './js/api.js', './js/i18n.js', './js/ui.js', './js/backup.js', './js/demo-data.js',
@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) return;
   // Réseau d'abord (pour toujours avoir la dernière version), cache en secours
   e.respondWith(
-    fetch(e.request).then(res => {
+    fetch(e.request.mode === 'navigate' ? e.request : new Request(e.request.url, { cache: 'no-cache', credentials: 'same-origin' })).then(res => {
       const copy = res.clone();
       caches.open(VERSION).then(c => c.put(e.request, copy));
       return res;

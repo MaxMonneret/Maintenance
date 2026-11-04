@@ -36,7 +36,7 @@ async function load() {
   idb = await openIdb();
   db = (await idbGet('kv', 'db')) || empty();
   // Premier lancement (ou ancienne version vide avec le seul profil « Technicien ») : données de démonstration
-  const blank = !db.reports.length && !db.machines.length && db.users.every(u => u.email === 'local');
+  const blank = !db.reports.length && !db.machines.length && !db.clients.length;
   if (!db.users.length || blank) await loadData(buildDemo());
   return db;
 }

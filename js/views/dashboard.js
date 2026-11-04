@@ -1,4 +1,4 @@
-import { api } from '../api.js';
+import { api, LOCAL } from '../api.js';
 import { t } from '../i18n.js';
 import { state, icon, esc, fmtDate, fmtHours, reportStatus, reportType, emptyState, isManager, todayISO } from '../ui.js';
 
@@ -17,6 +17,13 @@ export async function renderDashboard(view) {
         <a class="btn primary lg" href="#/reports/new">${icon('plus')} ${esc(t('new_report'))}</a>
       </div>
     </section>
+
+${LOCAL && !d.machines ? `
+    <section class="card card-pad stack demo-empty" style="margin-bottom:20px">
+      <h2>${icon('box')} ${esc(t('demo_empty_title'))}</h2>
+      <p class="muted">${esc(t('demo_empty_text'))}</p>
+      <div><button class="btn primary lg" id="load-demo">${icon('download')} ${esc(t('demo_load'))}</button></div>
+    </section>` : ''}
 
     <div class="grid cols-4" style="margin-bottom:20px">
       <a class="card kpi" href="#/reports"><span class="kpi-ic">${icon('edit')}</span>
@@ -48,4 +55,9 @@ export async function renderDashboard(view) {
       </div>
     </section>
   </div>`;
+  const ld = view.querySelector('#load-demo');
+  if (ld) ld.addEventListener('click', async () => {
+    ld.disabled = true;
+    await api.resetDemo(); location.hash = '#/'; location.reload();
+  });
 }
