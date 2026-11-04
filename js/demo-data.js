@@ -82,8 +82,19 @@ export function buildDemo() {
     { id: 1, name: 'Administrateur', email: 'admin', role: 'admin', country: 'FR', lang: 'fr', active: 1 },
     { id: 2, name: 'Julien Martin', email: 'julien.martin', role: 'technician', country: 'FR', lang: 'fr', active: 1 },
     { id: 3, name: 'James Walker', email: 'james.walker', role: 'technician', country: 'UK', lang: 'en', active: 1 },
-    { id: 4, name: 'Claire Dubois', email: 'claire.dubois', role: 'manager', country: 'FR', lang: 'fr', active: 1 }
+    { id: 4, name: 'Claire Dubois', email: 'claire.dubois', role: 'manager', country: 'FR', lang: 'fr', active: 1 },
+    { id: 5, name: 'Sarah Collins', email: 'sarah.collins', role: 'manager', country: 'UK', lang: 'en', active: 1 },
+    { id: 6, name: 'Mike Thompson', email: 'mike.thompson', role: 'manager', country: 'US', lang: 'en', active: 1 }
   ];
+  for (const u of users) u.featured = 1;   // comptes proposés sur l'écran de connexion
+  const TEAM = {
+    FR: ['Thomas Petit', 'Nicolas Roux', 'Camille Girard', 'Antoine Moreau', 'Lucas Fournier', 'Hugo Lambert', 'Mathieu Bonnet', 'Élodie Mercier', 'Romain Faure'],
+    UK: ['Oliver Bennett', 'Harry Ward', 'George Evans', 'Emily Hughes', 'Jack Turner', 'Thomas Wright', 'Daniel Price', 'Sophie Clarke', 'Ryan Mitchell'],
+    US: ['Michael Johnson', 'Chris Martinez', 'David Brown', 'Jessica Davis', 'Kevin Wilson', 'Brian Anderson', 'Ashley Taylor', 'Jason Moore', 'Tyler Jackson', 'Matthew White']
+  };
+  for (const [cc, names] of Object.entries(TEAM)) for (const name of names) users.push({
+    id: users.length + 1, name, role: 'technician', country: cc, lang: cc === 'FR' ? 'fr' : 'en', active: 1,
+    email: name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '.') });
   const clients = [
     { id: 1, name: 'Énergie Démo SA', country: 'FR', address: '12 rue de l’Industrie, 69000 Lyon', contact: 'M. Bernard', phone: '+33 4 00 00 00 00', email: 'contact@energie-demo.example' },
     { id: 2, name: 'Papeterie Démo', country: 'FR', address: 'Zone industrielle, 88000 Épinal', contact: 'Mme Laurent', phone: '+33 3 00 00 00 00', email: 'maintenance@papeterie-demo.example' },
@@ -412,7 +423,7 @@ export function buildDemo() {
 
   /* Planning : semaine dernière, semaine en cours, deux semaines à venir */
   const planning = []; let pid = 0;
-  const monday = (() => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })();
+  const monday = (() => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })();   // midi : évite les décalages de fuseau horaire
   const day = n => iso(new Date(monday.getTime() + n * 864e5));   // n = décalage depuis le lundi de la semaine en cours
   const pl = (user_id, s, e, kind, title, machine_id = null, status = 'planned', report_id = null, notes = null) =>
     planning.push({ id: ++pid, user_id, start_date: day(s), end_date: day(e), kind, status, title, machine_id, report_id, notes, created_by: 4 });
@@ -431,6 +442,41 @@ export function buildDemo() {
   pl(3, 7, 11, 'leave', 'Congés');
   pl(2, 14, 15, 'intervention', 'Visite préventive EP-210', 3, 'planned');
   pl(3, 14, 18, 'intervention', 'Expertise HS-420 – Refinery Unit 400', 6, 'planned', null, 'Visa US et habilitations raffinerie à vérifier.');
+
+  // Reste de l'équipe : planning généré (déterministe) de la semaine -2 à la semaine +4
+  const rnd = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
+  const siteCountry = m => (sites.find(s => s.id === m.site_id) || {}).country;
+  const JOBS = {
+    fr: ['Visite préventive', 'Expertise vibratoire', 'Remplacement roulements', 'Relevé de portée de denture', 'Révision réducteur', 'Assistance mise en service', 'Alignement ligne d’arbres'],
+    en: ['Preventive visit', 'Vibration assessment', 'Bearing replacement', 'Gear contact check', 'Gearbox overhaul', 'Commissioning support', 'Shaft line alignment']
+  };
+  for (const u of users.filter(x => x.role === 'technician' && x.id > 6)) {
+    const r = rnd(u.id * 7919), L = u.country === 'FR' ? 'fr' : 'en';
+    const pool = machines.filter(m => siteCountry(m) === u.country);
+    const machinesHere = pool.length ? pool : machines;
+    let dd = -14 + Math.floor(r() * 2);
+    const hasLeave = r() < .35, leaveAt = 3 + Math.floor(r() * 18);
+    while (dd < 28) {
+      const wd = ((dd % 7) + 7) % 7;
+      if (wd >= 5) { dd += 7 - wd; continue; }                                  // les blocs commencent en semaine
+      const status = dd + 3 < 0 ? 'done' : dd < 7 ? 'confirmed' : (r() < .5 ? 'confirmed' : 'planned');
+      const x = r();
+      if (hasLeave && Math.abs(dd - leaveAt) < 3) { pl(u.id, dd, dd + 4, 'leave', L === 'fr' ? 'Congés' : 'Annual leave', null, 'confirmed'); dd += 7; continue; }
+      if (x < .58) {                                                             // intervention (avec trajet éventuel)
+        const m = machinesHere[Math.floor(r() * machinesHere.length)];
+        const len = 1 + Math.floor(r() * 4);
+        if (r() < .4) {
+          pl(u.id, dd, dd, 'travel', L === 'fr' ? `Trajet ${m.city || ''}`.trim() : 'Travel to site', null, status); dd += 1;
+          while ((((dd % 7) + 7) % 7) >= 5) dd++;                                // pas de début d'intervention le week-end
+        }
+        pl(u.id, dd, dd + len - 1, 'intervention', `${JOBS[L][Math.floor(r() * JOBS[L].length)]} – ${m.model}`, m.id, status);
+        dd += len;
+      } else if (x < .7) { pl(u.id, dd, dd, 'office', L === 'fr' ? 'Rapports et préparation' : 'Reports and preparation', null, status); dd += 1; }
+      else if (x < .78) { pl(u.id, dd, dd + 1, 'training', L === 'fr' ? 'Formation alignement laser' : 'Laser alignment training', null, status); dd += 2; }
+      else if (x < .86) { pl(u.id, dd, dd + 4, 'standby', L === 'fr' ? 'Astreinte' : 'On-call standby', null, status); dd += 5; }
+      else dd += 1 + Math.floor(r() * 2);                                        // jours libres
+    }
+  }
 
   /* Demandes de devis reçues par le site */
   const rfq = [

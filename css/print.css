@@ -88,3 +88,20 @@ body.printing { background: #e9edeb; }
 .p-summary { margin-top: 5mm; border: 1px solid var(--p-line); border-left: 4px solid var(--p-accent); border-radius: 2mm; padding: 3mm 4mm; background: #f6fbfb; break-inside: avoid; }
 .p-summary h3 { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .07em; color: var(--p-accent); margin: 0 0 1.5mm; }
 .p-summary .p-text { font-size: 9.5pt; }
+
+/* Impression du planning (Planning → Exporter → Imprimer) */
+@media print {
+  body.print-planning .actions, body.print-planning .toolbar, body.print-planning .plan-kpis, body.print-planning .sub { display: none !important; }
+  body.print-planning .page { max-width: none; padding: 0; }
+  body.print-planning .page-head { margin-bottom: 4px; }
+  body.print-planning .page-head h1 { font-size: 16pt; }
+  body.print-planning .plan-card { box-shadow: none; border: 0; }
+  body.print-planning .plan-scroll { overflow: visible; }
+  body.print-planning .plan-table { min-width: 0; font-size: 7pt; }
+  body.print-planning .plan-table th.who { width: 34mm; position: static; }
+  body.print-planning .plan-table td { height: auto !important; }
+  body.print-planning .plan-chip { min-height: 0; padding: 1px 2px; font-size: 6.5pt; }
+  body.print-planning .plan-chip small, body.print-planning .avatar { display: none; }
+  body.print-planning .plan-table tr { break-inside: avoid; }
+  body.print-planning .plan-legend { display: flex !important; }
+}

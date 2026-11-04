@@ -200,7 +200,11 @@ export const api = {
     setSession(u.id); return { user: publicUser(u) };
   },
   async logout() { setSession(null); return { ok: true }; },
-  async profiles() { await load(); return clone(db.users.filter(u => u.active).map(publicUser)); },
+  async profiles() {
+    await load();
+    const act = db.users.filter(u => u.active), feat = act.filter(u => u.featured);
+    return clone((feat.length ? feat : act).map(publicUser));
+  },
   async isDemo() { await load(); return !!db.demo; },
   async resetDemo() { await load(); await loadData(buildDemo()); return { ok: true }; },
   async me() { await load(); return { user: publicUser(me()), settings: clone(db.settings) }; },

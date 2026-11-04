@@ -565,3 +565,31 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .nav a.nav-ext { margin-top: 10px; border-top: 1px solid rgba(255,255,255,.08); border-radius: 0 0 10px 10px; padding-top: 14px; font-size: 14px; color: #9fbcb6; }
 .login-art .site-link { position: relative; z-index: 1; align-self: flex-start; color: #fff; font-weight: 600; padding: 8px 14px; border: 1px solid rgba(255,255,255,.3); border-radius: 10px; background: rgba(255,255,255,.06); display: inline-flex; gap: 8px; align-items: center; }
 .login-art .site-link:hover { background: rgba(255,255,255,.14); }
+
+/* ---- Planning multi-agences ---- */
+.plan-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+.plan-kpi { text-align: left; padding: 14px 16px; cursor: pointer; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--line); }
+.plan-kpi.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.plan-rate { height: 8px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.plan-rate span { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+.plan-rate span.hot { background: var(--danger); } .plan-rate span.low { background: var(--warn); }
+.plan-kpi-nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 11.5px; color: var(--muted); }
+.plan-kpi-nums b { display: block; font-size: 18px; color: var(--ink); font-weight: 650; }
+.plan-kpi-nums .warn b { color: var(--danger); }
+.plan-toolbar { flex-wrap: wrap; gap: 10px; }
+.plan-toolbar .search { min-width: 220px; }
+.plan-legend { margin: 0 0 12px; }
+.pk.pk-dashed { --pkc: var(--muted); --pkb: transparent; border-left: 0; outline: 1.5px dashed var(--muted); outline-offset: -2px; }
+.plan-group th.who { background: var(--brand) !important; color: #fff; font-size: 13px; padding: 7px 12px !important; position: sticky; left: 0; }
+.plan-group th.who .muted { color: #a9c4be; }
+.plan-free th.who { font-size: 11.5px; font-weight: 600; color: var(--muted); padding: 4px 12px !important; }
+.plan-free td { height: auto !important; text-align: center; padding: 3px 0 !important; background: var(--surface-2); }
+.plan-free td span { font-size: 11.5px; font-weight: 700; border-radius: 10px; padding: 0 7px; }
+.plan-free td span.ok { color: var(--ok); } .plan-free td span.few { color: var(--warn); background: var(--warn-soft); } .plan-free td span.none { color: #fff; background: var(--danger); }
+.plan-table.compact td { height: 40px; padding: 2px 1px; }
+.plan-table.compact .plan-chip { min-height: 22px; padding: 2px 5px; margin-bottom: 2px; font-size: 11px; }
+.plan-table.compact .plan-chip small { display: none; }
+.plan-table.compact th.who { padding: 5px 10px; }
+.plan-table.compact th.who .avatar { width: 24px; height: 24px; font-size: 10px; }
+.plan-table.compact th.who small { font-size: 10.5px; }
+@media (max-width: 900px) { .plan-kpis { grid-template-columns: 1fr; } }
