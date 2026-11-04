@@ -46,7 +46,17 @@ if (form) {
     try {
       const { api } = await import('../js/api.js');
       number = (await api.rfq.submit(data)).number;
-    } catch (err) { console.warn('Enregistrement de la demande impossible :', err); }
+    } catch (err) {
+      console.warn('Enregistrement de la demande impossible :', err);
+      // Sans enregistrement ni e-mail, la demande serait perdue : on le dit clairement
+      if (!SITE.rfqEmail) {
+        btn.disabled = false;
+        msg.className = 'msg err';
+        msg.innerHTML = `<strong>Votre demande n’a pas pu être enregistrée.</strong><br>${esc(err.message || '')}<br>
+          Réessayez dans quelques instants${SITE.phone ? ` ou appelez le <a href="tel:${esc(SITE.phone)}">${esc(SITE.phone)}</a>` : ''}.`;
+        return;
+      }
+    }
     // 2. E-mail pré-rempli vers l'adresse de réception
     const label = sel => form[sel].selectedOptions[0]?.textContent || '';
     if (SITE.rfqEmail) {
@@ -58,7 +68,7 @@ if (form) {
     }
     form.hidden = true;
     msg.className = 'msg ok';
-    msg.innerHTML = `<strong>Merci, votre demande ${esc(number)} a bien été enregistrée.</strong><br>
+    msg.innerHTML = `<strong>${number ? `Merci, votre demande ${esc(number)} a bien été enregistrée.` : 'Merci, votre demande est prête à être envoyée par e-mail.'}</strong><br>
       ${SITE.rfqEmail ? 'Votre messagerie s’est ouverte avec la demande pré-remplie : pensez à envoyer l’e-mail.' : 'Un responsable du service la traitera et vous recontactera.'}
       ${data.urgency === 'emergency' ? `<br><br>Machine à l’arrêt : ${SITE.phone ? `appelez aussi le <a href="tel:${esc(SITE.phone)}">${esc(SITE.phone)}</a>.` : 'nous traitons votre demande en priorité.'}` : ''}
       <br><br><a class="s-btn" href="devis.html">Nouvelle demande</a> <a class="s-btn ghost" href="index.html">Retour à l’accueil</a>`;
