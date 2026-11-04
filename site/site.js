@@ -57,19 +57,45 @@ if (form) {
         return;
       }
     }
-    // 2. E-mail pré-rempli vers l'adresse de réception
+    // 2. Envoi par e-mail à l'adresse de réception
     const label = sel => form[sel].selectedOptions[0]?.textContent || '';
-    if (SITE.rfqEmail) {
-      const body = [`Demande de devis ${number}`, '', `Société : ${data.company}`, `Contact : ${data.contact_name}`, `E-mail : ${data.email}`, `Téléphone : ${data.phone}`,
-        `Lieu : ${[data.location, data.country].filter(Boolean).join(', ')}`, '', `Prestation : ${label('service')}`, `Urgence : ${label('urgency')}`,
-        `Date souhaitée : ${data.desired_date}`, '', `Matériel : ${[data.manufacturer, data.model].filter(Boolean).join(' ')}`, `N° de série : ${data.serial}`,
-        `Application : ${data.application}`, '', data.description].join('\n');
-      location.href = `mailto:${SITE.rfqEmail}?subject=${encodeURIComponent(`Demande de devis ${number} – ${data.company}`)}&body=${encodeURIComponent(body)}`;
+    const subject = `Demande de devis ${number} – ${data.company}${data.urgency === 'emergency' ? ' – MACHINE ARRÊTÉE' : ''}`;
+    let mode = '';   // 'sent' (envoi direct), 'mailto' (messagerie du visiteur) ou ''
+    if (SITE.rfqEmail && !data._honey) {
+      // a) Envoi direct via FormSubmit, sans passer par la messagerie du visiteur
+      if (SITE.directSend) {
+        try {
+          const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(SITE.rfqEmail)}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              _subject: subject, _template: 'table', _captcha: 'false', ...(data.email ? { _replyto: data.email } : {}),
+              'N° de demande': number || '—', 'Société': data.company, 'Contact': data.contact_name, 'E-mail': data.email || '—', 'Téléphone': data.phone || '—',
+              'Lieu': [data.location, data.country].filter(Boolean).join(', ') || '—', 'Prestation': label('service'), 'Urgence': label('urgency'),
+              'Date souhaitée': data.desired_date || '—', 'Matériel': [data.manufacturer, data.model].filter(Boolean).join(' ') || '—',
+              'N° de série': data.serial || '—', 'Application': data.application || '—', 'Description': data.description
+            })
+          });
+          const out = await res.json().catch(() => ({}));
+          if (res.ok && String(out.success) === 'true') mode = 'sent';
+          else console.warn('FormSubmit :', out.message || res.status);
+        } catch (err) { console.warn('Envoi direct impossible :', err); }
+      }
+      // b) Secours : messagerie du visiteur avec la demande pré-remplie
+      if (!mode) {
+        const body = [`Demande de devis ${number}`, '', `Société : ${data.company}`, `Contact : ${data.contact_name}`, `E-mail : ${data.email}`, `Téléphone : ${data.phone}`,
+          `Lieu : ${[data.location, data.country].filter(Boolean).join(', ')}`, '', `Prestation : ${label('service')}`, `Urgence : ${label('urgency')}`,
+          `Date souhaitée : ${data.desired_date}`, '', `Matériel : ${[data.manufacturer, data.model].filter(Boolean).join(' ')}`, `N° de série : ${data.serial}`,
+          `Application : ${data.application}`, '', data.description].join('\n');
+        location.href = `mailto:${SITE.rfqEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        mode = 'mailto';
+      }
     }
     form.hidden = true;
     msg.className = 'msg ok';
-    msg.innerHTML = `<strong>${number ? `Merci, votre demande ${esc(number)} a bien été enregistrée.` : 'Merci, votre demande est prête à être envoyée par e-mail.'}</strong><br>
-      ${SITE.rfqEmail ? 'Votre messagerie s’est ouverte avec la demande pré-remplie : pensez à envoyer l’e-mail.' : 'Un responsable du service la traitera et vous recontactera.'}
+    msg.innerHTML = `<strong>${mode === 'sent' || number ? `Merci, votre demande${number ? ' ' + esc(number) : ''} a bien été ${mode === 'sent' ? 'envoyée' : 'enregistrée'}.` : 'Merci, votre demande est prête à être envoyée par e-mail.'}</strong><br>
+      ${mode === 'sent' ? 'Notre service l’a reçue par e-mail et vous recontactera rapidement.'
+        : mode === 'mailto' ? 'Votre messagerie s’est ouverte avec la demande pré-remplie : pensez à envoyer l’e-mail.'
+        : 'Un responsable du service la traitera et vous recontactera.'}
       ${data.urgency === 'emergency' ? `<br><br>Machine à l’arrêt : ${SITE.phone ? `appelez aussi le <a href="tel:${esc(SITE.phone)}">${esc(SITE.phone)}</a>.` : 'nous traitons votre demande en priorité.'}` : ''}
       <br><br><a class="s-btn" href="devis.html">Nouvelle demande</a> <a class="s-btn ghost" href="index.html">Retour à l’accueil</a>`;
     msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
