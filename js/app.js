@@ -1,7 +1,7 @@
 /* Point d'entrée : connexion, structure de l'application et routeur */
 import { api } from './api.js';
 import { t, setLang, getLang } from './i18n.js';
-import { state, icon, esc, avatar, $, $$, toastError } from './ui.js';
+import { state, icon, esc, avatar, $, $$, toastError, isManager } from './ui.js';
 import { renderLogin } from './views/login.js';
 import { renderDashboard } from './views/dashboard.js';
 import { renderMachines, renderMachine, renderClients } from './views/installed.js';
@@ -10,6 +10,7 @@ import { renderReportEditor } from './views/report-edit.js';
 import { renderReportPrint } from './views/report-print.js';
 import { renderHours } from './views/hours.js';
 import { renderPlanning } from './views/planning.js';
+import { renderRfq } from './views/rfq.js';
 import { initDictation } from './dictation.js';
 import { renderSettings } from './views/settings.js';
 
@@ -27,6 +28,7 @@ const ROUTES = [
   [/^\/reports\/(\d+)\/print$/, renderReportPrint, 'reports', true],
   [/^\/hours$/, renderHours, 'hours'],
   [/^\/planning$/, renderPlanning, 'planning'],
+  [/^\/rfq$/, renderRfq, 'rfq'],
   [/^\/settings$/, renderSettings, 'settings']
 ];
 
@@ -35,6 +37,7 @@ const NAV = [
   ['installed', '#/machines', 'machine', 'nav_installed'],
   ['reports', '#/reports', 'report', 'nav_reports'],
   ['planning', '#/planning', 'calendar', 'nav_planning'],
+  ['rfq', '#/rfq', 'box', 'nav_rfq', 'manager'],
   ['hours', '#/hours', 'clock', 'nav_hours'],
   ['settings', '#/settings', 'settings', 'nav_settings']
 ];
@@ -50,7 +53,8 @@ function shell() {
           <div class="brand-sub">${esc(t('app_name'))}</div>
         </div>
         <nav class="nav">
-          ${NAV.map(([k, href, ic, lab]) => `<a href="${href}" data-nav="${k}">${icon(ic)}<span>${esc(t(lab))}</span></a>`).join('')}
+          ${NAV.filter(n => !n[4] || isManager()).map(([k, href, ic, lab]) => `<a href="${href}" data-nav="${k}">${icon(ic)}<span>${esc(t(lab))}</span></a>`).join('')}
+          <a href="site/index.html" target="_blank" rel="noopener" class="nav-ext">${icon('building')}<span>${esc(t('nav_site'))} ↗</span></a>
         </nav>
         <div class="sidebar-foot">
           <div class="me">
@@ -69,7 +73,7 @@ function shell() {
         <main id="view"></main>
       </div>
       <nav class="bottom-nav">
-        ${NAV.map(([k, href, ic, lab]) => `<a href="${href}" data-nav="${k}">${icon(ic)}<span>${esc(t(lab))}</span></a>`).join('')}
+        ${NAV.filter(n => !n[4] || isManager()).map(([k, href, ic, lab]) => `<a href="${href}" data-nav="${k}">${icon(ic)}<span>${esc(t(lab))}</span></a>`).join('')}
       </nav>
     </div>`;
   $$('[data-logout]').forEach(b => b.addEventListener('click', async () => {

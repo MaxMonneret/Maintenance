@@ -27,7 +27,7 @@ const idbPut = (store, key, val) => tx(store, 'readwrite', s => s.put(val, key))
 const idbDel = (store, key) => tx(store, 'readwrite', s => s.delete(key));
 
 const empty = () => ({
-  seq: {}, users: [], clients: [], sites: [], machines: [], reports: [], photos: [], timesheets: [], planning: [],
+  seq: {}, users: [], clients: [], sites: [], machines: [], reports: [], photos: [], timesheets: [], planning: [], rfq: [],
   settings: { company_name: '', company_address: '', company_contact: '', report_prefix: 'RI', logo: '' }
 });
 
@@ -129,6 +129,7 @@ function planView(p) {
   return { ...p, user_name: u.name, serial: m.serial, model: m.model, site_name: s.name, city: s.city, client_name: c.name,
     report_number: r && r.number };
 }
+const rfqView = q => ({ ...q, assigned_name: (byId('users', q.assigned_to) || {}).name });
 const isMine = r => r.created_by === me().id || (r.technicians || []).includes(me().id);
 const sortReports = (a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id;
 
@@ -343,6 +344,31 @@ export const api = {
       await idbDel('photos', Number(id));
       db.photos = db.photos.filter(p => p.id !== Number(id)); await persist(); return { ok: true };
     }
+  },
+  rfq: {
+    // Formulaire du site : sans connexion (enregistré dans ce navigateur)
+    async submit(b) {
+      await load();
+      const keys = ['company', 'contact_name', 'email', 'phone', 'country', 'location', 'manufacturer', 'model', 'serial',
+        'application', 'service', 'urgency', 'desired_date', 'description'];
+      const d = {};
+      for (const k of keys) if (b[k] !== undefined && b[k] !== '') d[k] = String(b[k]).slice(0, k === 'description' ? 4000 : 200);
+      if (!d.company || !d.contact_name || !(d.email || d.phone)) fail(400, 'Société, nom et e-mail ou téléphone obligatoires');
+      const year = new Date().getFullYear();
+      const n = db.rfq.filter(x => (x.number || '').startsWith(`RFQ-${year}-`)).length + 1;
+      const q = { urgency: 'normal', ...d, id: nextId('rfq'), number: `RFQ-${year}-${String(n).padStart(4, '0')}`, status: 'new', notes: null, assigned_to: null, created_at: now() };
+      db.rfq.push(q); await persist(); return { id: q.id, number: q.number };
+    },
+    async list() { await load(); if (!isManager()) fail(403, 'Réservé aux responsables'); return clone([...db.rfq].sort((a, b) => b.id - a.id).map(rfqView)); },
+    async get(id) { await load(); if (!isManager()) fail(403, 'Réservé aux responsables'); const q = byId('rfq', id); if (!q) fail(404, 'Introuvable'); return clone(rfqView(q)); },
+    async update(id, b) {
+      await load(); if (!isManager()) fail(403, 'Réservé aux responsables');
+      const q = byId('rfq', id); if (!q) fail(404, 'Introuvable');
+      Object.assign(q, pick(b, ['status', 'notes']));
+      if (b.assigned_to !== undefined) q.assigned_to = b.assigned_to ? Number(b.assigned_to) : null;
+      await persist(); return clone(rfqView(q));
+    },
+    async remove(id) { await load(); if (!isManager()) fail(403, 'Réservé aux responsables'); db.rfq = db.rfq.filter(q => q.id !== Number(id)); await persist(); return { ok: true }; }
   },
   planning: {
     async list(q = {}) {

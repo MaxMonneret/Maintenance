@@ -92,6 +92,7 @@ export function buildDemo() {
     { id: 5, name: 'Cimenterie Démo', country: 'FR', address: 'Port Ouest, 59140 Dunkerque', contact: 'M. Lefebvre', phone: '+33 3 00 00 00 01', email: 'maintenance@ciment-demo.example' },
     { id: 6, name: 'Sucrerie Démo', country: 'FR', address: 'Route de Douai, 62000 Arras', contact: 'Mme Caron', phone: '+33 3 00 00 00 02', email: 'energie@sucrerie-demo.example' },
     { id: 7, name: 'Demo Shipyard Ltd', country: 'UK', address: 'Portsmouth, Hampshire', contact: 'Mr. Hughes', phone: '+44 23 0000 0000', email: 'fleet@shipyard-demo.example' },
+    { id: 9, name: 'Motoriste Démo', country: 'FR', address: 'Parc aéronautique, 77550 Réau', contact: 'M. Chaumont', phone: '+33 1 00 00 00 04', email: 'essais@motoriste-demo.example' },
     { id: 8, name: 'Aciérie Démo', country: 'FR', address: 'Zone industrielle, 13270 Fos-sur-Mer', contact: 'M. Garnier', phone: '+33 4 00 00 00 03', email: 'laminoir@acier-demo.example' }
   ].map(x => ({ ...x, archived: 0 }));
   const sites = [
@@ -103,6 +104,7 @@ export function buildDemo() {
     { id: 6, client_id: 5, name: 'Usine – Four 2', city: 'Dunkerque', country: 'FR', contact: 'M. Lefebvre (resp. mécanique)' },
     { id: 7, client_id: 6, name: 'Atelier énergie et diffusion', city: 'Arras', country: 'FR', contact: 'Mme Caron, M. Dupuis' },
     { id: 8, client_id: 7, name: 'Patrol vessel P-12 – engine room', city: 'Portsmouth', country: 'UK', contact: 'Chief engineer' },
+    { id: 10, client_id: 9, name: 'Banc d’essais n° 3', city: 'Réau', country: 'FR', contact: 'M. Chaumont, M. Perret' },
     { id: 9, client_id: 8, name: 'Laminoir à chaud – train finisseur', city: 'Fos-sur-Mer', country: 'FR', contact: 'M. Garnier' }
   ].map(x => ({ ...x, archived: 0 }));
   const M = (id, site_id, serial, manufacturer, model, order_no, type, application, power_kw, ratio, speeds, commissioning_date, status, notes = '') =>
@@ -123,13 +125,28 @@ export function buildDemo() {
     M(13, 8, 'DM-2018-03390', 'Allen Gears', 'Allen MR-12', 'AG-18-0077', 'Réducteur marin', 'Propulsion – ligne d’arbre bâbord', 7000, '4,8:1', '1200 / 250', '2018-06-15', 'in_service'),
     M(14, 8, 'DM-2018-03391', 'Allen Gears', 'Allen MR-12', 'AG-18-0077', 'Réducteur marin', 'Propulsion – ligne d’arbre tribord', 7000, '4,8:1', '1200 / 250', '2018-06-15', 'in_service'),
     M(15, 9, 'DM-2006-01968', 'Lufkin', 'LM-2200', 'CD-06-0215', 'Réducteur de laminoir', 'Cage finisseuse F3', 6500, '3,2:1', '600 / 187', '2006-03-30', 'watch', 'Hausse progressive de la température du palier GV côté moteur (+8 °C en 6 mois).'),
+    M(17, 10, 'DM-1997-30519', 'Comélor', 'PH 135', '05-01888', 'Multiplicateur', 'Banc d’essais – 2 moteurs, palier d’étanchéité, mur élastique', 1600, '1:4', '1500 / 6000', `${year - 1}-04-30`, 'in_service',
+      'Accouplements : AFX 125 (moteur / moteur), AFX 140 à broches (moteur / PH 135), Flexibox à allonge lg 550 (PH 135 / palier). Palier positionné par une fourchette goupillée.'),
     M(16, 3, 'DM-2010-04471', 'Lufkin', 'PG-120', 'CD-10-0610', 'Réducteur parallèle', 'Pompe de mélange PM3', 250, '2,5:1', '1490 / 596', '2010-11-08', 'in_service')
   ];
 
   const photos = []; // { id, report_id, filename, caption, data }
+  // Photos réelles sous licence libre (Wikimedia Commons) – crédit ajouté à la légende
+  const REAL = {
+    machine: ['img/photos/reducteur-lufkin.jpg', 'Lufkin Industries'],
+    open: ['img/photos/reducteur-double-helicoidal.jpg', 'Parchaco, CC0'],
+    pitting: ['img/demo/denture-pitting.jpg', 'Loscimmio, CC BY-SA 4.0'],
+    micropitting: ['img/demo/denture-micro-pitting.jpg', 'G. Lötzig, CC BY-SA 3.0'],
+    bearing: ['img/demo/roulement-rotule-en-place.jpg', 'Falk2, CC BY-SA 4.0'],
+    bearing2: ['img/demo/roulement-rotule.jpg', 'Androstachys, CC BY-SA 3.0'],
+    journal: ['img/demo/palier-traces-frottement.jpg', 'domaine public'],
+    journalnew: ['img/demo/palier-lisse.jpg', 'Miba Industrial Bearings, CC BY-SA 4.0']
+  };
   const ph = (rid, kind, caption) => {
-    const id = photos.length + 1;
-    photos.push({ id, report_id: rid, filename: `demo-${id}`, caption, created_by: 1, data: PHOTOS[kind](caption).toDataURL('image/jpeg', .8) });
+    const id = photos.length + 1, real = REAL[kind];
+    photos.push({ id, report_id: rid, filename: `demo-${id}`, created_by: 1,
+      caption: real ? `${caption} (photo : ${real[1]})` : caption,
+      data: real ? real[0] : PHOTOS[kind](caption).toDataURL('image/jpeg', .8) });
     return id;
   };
   const machineView = m => { const s = sites.find(x => x.id === m.site_id); return { ...m, site_name: s.name, city: s.city, site_contact: s.contact }; };
@@ -155,7 +172,8 @@ export function buildDemo() {
     sub('inspection', 1).text = 'Huile ISO VG 46 claire. Analyse du mois dernier conforme (eau < 100 ppm, classe de propreté ISO 17/15/12).';
     sub('inspection', 2).text = 'Paliers lisses : pas de rayure ni de trace de grippage sur les régules visibles.';
     sub('inspection', 3).text = 'Dentures en bon état : portée centrée sur toute la largeur, pas de pitting ni de micro-pitting.';
-    sub('inspection', 3).photos = [ph(1, 'gear', 'Denture roue GV par la trappe de visite'), ph(1, 'contact', 'Relevé de portée au bleu')];
+    sub('inspection', 3).photos = [ph(1, 'open', 'Vue d’ensemble des dentures, carter ouvert'), ph(1, 'contact', 'Relevé de portée au bleu')];
+    sub('inspection', 2).photos = [ph(1, 'journalnew', 'Coussinet de palier GV – état de surface')];
     sub('inspection', 5).text = 'Accouplements à denture graissés, pas d’usure anormale.';
     main('tests').text = 'Redémarrage et essai en charge pendant 2 h : vibrations paliers < 2,0 mm/s, températures paliers stabilisées à 68 °C maximum.';
     main('conclusions').text = 'Réducteur en très bon état, aucune anomalie relevée.';
@@ -175,9 +193,9 @@ export function buildDemo() {
     sub('disassembly', 1).rows = [['Jeu de denture', '0,29 mm', '0,20 – 0,35 mm'], ['Jeu axial roulement PV', '0,42 mm', '0,20 – 0,40 mm'], ['Jeu axial roulement GV', '0,38 mm', '0,20 – 0,40 mm']];
     sub('inspection', 1).text = 'Huile noircie, présence de particules métalliques fines sur le bouchon magnétique.';
     sub('inspection', 2).text = 'Marques d’usure sur les galets et les bagues extérieures des roulements PV.';
-    sub('inspection', 2).photos = [ph(2, 'bearing', 'Roulement PV type 22318 – usure des galets'), ph(2, 'bearing', 'Roulement GV type 22222')];
+    sub('inspection', 2).photos = [ph(2, 'bearing', 'Roulement PV type 22318 – usure des galets'), ph(2, 'bearing2', 'Roulement GV type 22222 déposé')];
     sub('inspection', 3).text = 'Pitting évolutif sur la roue PV, quelques traces de chocs. Pas de mobile de rechange chez le client.';
-    sub('inspection', 3).photos = [ph(2, 'gear', 'Roue PV – pitting évolutif')];
+    sub('inspection', 3).photos = [ph(2, 'pitting', 'Roue PV – pitting évolutif'), ph(2, 'micropitting', 'Pignon GV – micro-pitting et surbrillance')];
     sub('inspection', 4).text = 'Douilles de frottement rayées, lèvres des bagues d’étanchéité usées.';
     sub('inspection', 4).photos = [ph(2, 'seal', 'Douille de frottement PV – rayures')];
     sub('inspection', 5).text = 'Accouplement GV en bon état. Accouplement PV : usure anormale des dents sur le moyeu et la couronne.';
@@ -229,6 +247,90 @@ export function buildDemo() {
       header: { order_no: 'SO-' + year + '-1031', accompanied_by: 'None', direct_customer: 'North Sea Demo Ltd', end_user: 'North Sea Demo Ltd', installation_type: 'Electric motor – gear increaser – gas compressor', persons_met: 'Mr. Campbell (OIM)', line_of_business: 'Oil & Gas' } }, S);
   }
 
+  /* 5. Inspection majeure et reconstruction d'un multiplicateur – en anglais (modèle : rapport « Field Service Report ») */
+  {
+    const m12 = machines.find(m => m.id === 12);
+    const { S, main, sub } = build(m12, 'en');
+    main('equipment').rows = [['Lufkin', 'N-1800', 'CD-16-1906', 'DM-2016-09102', '41 000', 'Aged']];
+    main('equipment').photos = [ph(5, 'machine', 'Lufkin gear unit – reference picture')];
+    main('location').text = 'Refinery – Unit 400, Houston TX.\nThe gear increaser is located within the refinery complex, on the hydrogen recycle compressor deck.';
+    main('purpose').text = 'Major inspection and rebuild.\nThe 4500 kW gear increaser is driven by an electric motor at 1785 RPM with an output of 7497 RPM to the recycle compressor.';
+    main('appearance').text = 'The gear increaser had been disassembled before I arrived on site. The gear case did not show any major oil leak or corrosion. The internals of the gear case were tarnished from oil residue, as were the gear and pinion that had been removed. All instrumentation had been disconnected.';
+    main('disassembly').text = 'The gear increaser had been disassembled prior to my arrival by the site contractor. They recorded the as-found dimensions of the gear set and bearings that were removed. Please see their report for results.';
+    main('inspection').text = 'See the reassembly section for the inspection of gears, bearings and gear case.';
+    sub('inspection', 2).photos = [ph(5, 'journal', 'Removed LS bearing – rub marks on the bearing surface')];
+    main('parts').rows = [['Bearing', '1', 'DEMO-52852', '', 'Lufkin'], ['Bearing', '1', 'DEMO-52853', '', 'Lufkin'], ['Thrust bearing', '1', 'DEMO-52854', '', 'Lufkin'],
+      ['L.S. gear & shaft assy.', '1', 'DEMO-52890', '', 'Lufkin'], ['H.S. pinion', '1', 'DEMO-76450', '', 'Lufkin'], ['Seal / adapter H.S.', '1', 'DEMO-52851', '', 'Lufkin'], ['Oil slinger', '1', 'DEMO-86373', '', 'Lufkin']];
+    main('parts').text = 'Customer furnished spares from Lufkin Gears.';
+    main('reassembly').text = 'The gear case and cover were cleaned and prepped for assembly.\nThe gear case was assembled without gears and the housing bores were micrometer checked for size.\nThe gear case was then sealed with an anaerobic gasket compound and the cover was installed. All fasteners were torqued per Lufkin torque specifications for grade 5 bolts.';
+    main('reassembly').photos = [ph(5, 'open', 'Gear set in the lower half of the case')];
+    sub('reassembly', 1).rows = [['Thrust bearing clearance', '.009"', ''], ['High speed axial float', '.043"', ''], ['Backlash between gears', '.020"', ''],
+      ['High speed seal clearance', '.006"', ''], ['Low speed seal clearance', '.021"', 'Out of tolerance'], ['L.S. bull gear bearing journals', '6.999"', ''],
+      ['H.S. pinion bearing journals', '4.000"', ''], ['Low speed housing bores', '8.000"', ''], ['High speed housing bores', '4.877"', '']];
+    sub('reassembly', 1).text = 'Gear tooth contact was checked with Prussian blue after reassembly.';
+    sub('reassembly', 1).photos = [ph(5, 'contact', 'Gear tooth contact – LS gear')];
+    sub('reassembly', 2).text = 'The new bearings had been micrometer checked by the contractor prior to my arrival.\nThe lower halves of the bearings were set into the housing, then the low speed gear and the high speed pinion were placed into the gear case. A Prussian blue check of the shaft-to-bearing contact was made on each bearing (LS DE / NDE, HS DE / NDE).\nThe bearing-to-shaft contact meets the minimum surface contact required: no raised high spots, contact across the full width of each bearing.';
+    sub('reassembly', 2).photos = [ph(5, 'journalnew', 'New journal bearing before installation')];
+    sub('reassembly', 3).text = 'High speed seal clearance .006". Low speed seal clearance .021": out of tolerance. As no new seal was available, the old seal was re-used.';
+    sub('reassembly', 5).text = 'The motor and the compressor had not been aligned to the gear increaser at my release.';
+    sub('reassembly', 6).rows = [['Main housing bolts', '644 ft.lbs (873 N·m)', 'Grade 5'], ['Gear case flange bolts', '266 ft.lbs (361 N·m)', 'Grade 5'], ['Sealant', 'Anaerobic gasket compound', '']];
+    main('tests').text = 'No tests were performed during my visit. The low speed gear was sprayed with machinist layout fluid in three places around the gear for future reference of gear tooth contact checks.';
+    main('conclusions').text = 'The gear increaser was rebuilt complete with customer furnished spares. I suggested that the gears and bearings removed from the unit be returned to Lufkin Gears for evaluation, inspection and repair.\nThe instrumentation was verified to be operational but had not been connected at my release, nor had the motor or compressor been aligned to the gear increaser.\nThe pinion needs to have the oil slinger placed in the correct position as per drawing. The low speed seal clearance is out of tolerance: the old seal was re-used.\nThe customer was satisfied with the rebuild process.';
+    main('recommendations').text = '• Install new fresh oil in the lube oil reservoir.\n• Monitor temperature, oil pressure and vibration during start-up.\n• Monitor for oil leaks daily.\n• Replace the low speed seal at the next opportunity.\n• Contact the Lufkin Gears service department for any questions.';
+    main('log').rows = [[fr(daysAgo(62)), 'Arrival on site, review of the contractor as-found report, cleaning of the gear case.', ''],
+      [fr(daysAgo(61)), 'Bore checks, bearing installation, Prussian blue checks LS / HS.', ''],
+      [fr(daysAgo(60)), 'Gear set installation, tooth contact check, case closing and torquing, clearance readings.', '2']];
+    main('log').text = 'Delays: waiting for crane availability (2 h).';
+    rep({ id: 5, number: num(5), machine_id: 12, date: daysAgo(62), end_date: daysAgo(60), type: 'curative', status: 'validated', title: 'Major inspection – gear increaser rebuild',
+      technicians: [3], created_by: 3, validated_by: 4, signer_name: 'Ms. Garcia', signature: signature('Ms. Garcia'), signed_at: daysAgo(60) + 'T17:00:00Z',
+      header: { order_no: 'SO-' + year + '-0950', accompanied_by: 'None', direct_customer: 'Gulf Demo Refining', end_user: 'Same', installation_type: 'Electric motor – gear increaser – recycle compressor', persons_met: 'Ms. Garcia (maintenance)', line_of_business: 'Oil & Gas' } }, S);
+  }
+  /* 6. Montage d'un banc d'essais avec journal et relevés d'alignement (modèle : rapport « Rapport de visite ou de montage » Comélor) */
+  {
+    const m17 = machines.find(m => m.id === 17);
+    const { S, main, sub } = build(m17, 'fr');
+    const y1 = year - 1, d = (dd, mm = '04') => `${String(dd).padStart(2, '0')}/${mm}/${y1}`;
+    main('equipment').rows = [['Multiplicateur Comélor', 'PH 135', '05-01888', 'DM-1997-30519', '0', 'Neuf – montage'],
+      ['Moteur électrique double sortie', '', '', '', '', ''], ['Moteur électrique simple sortie', '', '', '', '', ''],
+      ['Palier d’étanchéité', '', '', '', '', ''], ['Mur élastique sur plots', '', '', '', '', '']];
+    main('location').text = 'Motoriste Démo – banc d’essais n° 3.';
+    main('purpose').text = 'Montage du banc d’essais équipé d’un multiplicateur PH 135 (n° DM-1997-30519) : pose, calage, alignements et accouplements.';
+    main('appearance').text = 'Matériel neuf livré sur palettes, protections en place. Massif béton et châssis moteurs prêts à l’arrivée.';
+    main('reassembly').text = 'Alignements réalisés au combilaser (palier / PH 135 / moteurs) et au comparateur (mur élastique / palier), voir relevés en 8.5.';
+    main('reassembly').photos = [ph(6, 'open', 'Multiplicateur avant pose des capots')];
+    sub('reassembly', 5).rows = [
+      ['Mur élastique / palier – concentricité H / G / D / B (comparateur, Ø palpeur 1400 mm)', '-0,19 / 0,12 / -0,14 / 0,00 mm', d(21)],
+      ['Mur élastique / palier – parallélisme H / G / D / B', '0,06 / 0,09 / -0,06 / 0,00 mm', d(21)],
+      ['Palier / PH 135 – horizontal (combilaser, 6000 tr/min)', '0,005 mm ; 0,02/100', d(24)],
+      ['Palier / PH 135 – vertical', '0,01 mm ; 0,01/100', d(24)],
+      ['PH 135 / moteur double sortie – horizontal (1500 tr/min)', '0,00 mm ; 0,00/100', d(28)],
+      ['PH 135 / moteur double sortie – vertical', '0,01 mm ; 0,01/100', d(28)],
+      ['Moteur / moteur – horizontal', '0,05 mm ; 0,00/100', d(28)], ['Moteur / moteur – vertical', '0,04 mm ; 0,00/100', d(28)]];
+    sub('reassembly', 5).text = 'Mur élastique / palier : relevés faits après correction en position du mur élastique ; compensation de 0,1 mm sur l’arrière du palier pour corriger le défaut de parallélisme.\nPalier / PH 135 : cales avant 10,58 mm (+ 0,3 mm au milieu), cales arrière 10,65 mm (+ 0,2 mm au milieu).\nPH 135 / moteur : cote d’accouplement respectée à 160 mm ; une patte moteur calée de 0,5 mm (défaut de taque).\nMoteur / moteur : clinquant de 0,2 à 0,3 mm à chaque patte pour compenser le défaut du châssis.';
+    main('tests').text = 'Essais de goupillage : impossibles sur le palier et sur le multiplicateur. Pour le palier, une fourchette de positionnement a été réalisée par le client, fixée et goupillée (2 goupilles coniques Ø16, 2 vis M16x80).';
+    main('conclusions').text = 'Montage du banc terminé : multiplicateur et moteurs alignés dans les tolérances, accouplements fermés et graissés, capots posés.\nLes défauts du génie civil (équerrage du mur, taraudages du châssis) ont été compensés avec l’accord du client.';
+    main('recommendations').text = 'Contrôler les alignements à chaud après les premiers essais en charge.\nVérifier le serrage des fixations dans le béton après 100 h de fonctionnement.';
+    main('log').rows = [
+      [d(14), 'Arrivée 13h30, préparation de l’outillage, pose de l’équerre de renfort (4 chevilles M16) et calage pour compenser le défaut d’équerrage du mur. Équerre soudée sur le marbre du multiplicateur (4 cordons de 40 mm, soudeur qualifié).', ''],
+      [d(15), 'Pré-alignement palier / mur élastique : concentricité réalisable, parallélisme impossible (3,5 mm de défaut mesuré sur le mur élastique), constaté avec le client.', '3'],
+      [d(16), 'Alignement arrêté : la surface du mur élastique doit être reprise par le sous-traitant génie civil. Pré-alignement multiplicateur / moteurs, pose des couronnes, montage de l’accouplement à broches, essais des capots.', '2'],
+      [d(17), 'Assistance au sous-traitant pour la vérification du parallélisme du mur élastique.', '8'],
+      [d(18), 'Essais des plateaux sur multiplicateur et palier, vérification de l’alignement mur élastique / palier après ébauche de calage.', '2'],
+      [d(21), 'Arrivée 13h30, remontage du mur élastique par le sous-traitant, pose des 6 cales définitives du palier, alignement et blocage.', '2'],
+      [d(22), 'Fabrication et montage des joints d’étanchéité des plateaux Flexibox, montage pour serrage au couple des 3 écrous bout d’arbre.', '6'],
+      [d(23), 'Alignement multiplicateur, retouche des cales avec clinquant 0,20 et 0,30 mm (voir relevé).', ''],
+      [d(24), 'Blocage du multiplicateur, reprise de l’alignement du 1er moteur. Fixations béton non bloquées constatées : blocage et pointage à la soudure. Taraudages M30 du châssis du 2e moteur non conformes : rebouchage puis perçage-taraudage de 6 trous avec l’accord du client.', '6'],
+      [d(25), 'Alignement des moteurs pour déterminer les hauteurs de cales, essais de goupillage, fourchette de positionnement du palier.', ''],
+      [d(28), 'Mise en place des cales moteurs, alignements définitifs (voir relevés), fermeture et graissage des accouplements.', ''],
+      [d(29), 'Pose des capots, pointage des vis vérins du multiplicateur, mise en place de la fourchette du palier.', ''],
+      [d(30), 'Remontage de l’allonge GV, retouche du capot, repli et nettoyage du chantier.', '']];
+    main('log').text = 'Total des aléas : 29 h (génie civil non conforme).';
+    rep({ id: 6, number: `RI-${y1}-0001`, machine_id: 17, date: `${y1}-04-14`, end_date: `${y1}-04-30`, type: 'commissioning', status: 'validated',
+      title: 'Montage banc d’essais équipé d’un multiplicateur PH 135', technicians: [2], created_by: 2, validated_by: 4,
+      header: { order_no: '05-01888', accompanied_by: 'M. Bernard (mécanicien)', direct_customer: 'Motoriste Démo', end_user: 'Motoriste Démo',
+        installation_type: 'Banc d’essais', persons_met: 'M. Chaumont, M. Perret', line_of_business: 'Aéronautique' } }, S);
+  }
+
   /* ---------- Historique des maintenances (rapports validés des années précédentes) ---------- */
   const H = {
     fr: {
@@ -264,6 +366,7 @@ export function buildDemo() {
   const histNum = y => `RI-${y}-${String(100 + (perYear[y] = (perYear[y] || 0) + 1)).padStart(4, '0')}`;
   let rid = reports.length;
   for (const m of machines) {
+    if (m.id === 17) continue;
     const site = sites.find(x => x.id === m.site_id); const client = clients.find(x => x.id === site.client_id);
     const lang = ['UK', 'US'].includes(site.country) ? 'en' : 'fr';
     const L = H[lang]; const tech = lang === 'en' ? 3 : 2;
@@ -329,10 +432,26 @@ export function buildDemo() {
   pl(2, 14, 15, 'intervention', 'Visite préventive EP-210', 3, 'planned');
   pl(3, 14, 18, 'intervention', 'Expertise HS-420 – Refinery Unit 400', 6, 'planned', null, 'Visa US et habilitations raffinerie à vérifier.');
 
+  /* Demandes de devis reçues par le site */
+  const rfq = [
+    { id: 1, number: `RFQ-${year}-0001`, company: 'Cimenterie Démo', contact_name: 'M. Lefebvre', email: 'maintenance@ciment-demo.example', phone: '+33 3 00 00 00 01',
+      country: 'FR', location: 'Dunkerque', manufacturer: 'Lufkin', model: 'MC-1250', serial: 'DM-2009-05140', application: 'Broyeur à boulets cru',
+      service: 'inspection', urgency: 'normal', desired_date: day(21), description: 'Inspection des dentures et des paliers lors de l’arrêt annuel du four 2 (5 jours). Merci de prévoir l’endoscopie et le relevé de portée.',
+      status: 'new', notes: null, assigned_to: null, created_at: day(-1) + 'T09:12:00Z' },
+    { id: 2, number: `RFQ-${year}-0002`, company: 'Hydro Demo Energy', contact_name: 'Mr. Olsen', email: 'olsen@hydro-demo.example', phone: '',
+      country: 'NO', location: 'Bergen', manufacturer: 'Allen Gears', model: 'Allen TG-30', serial: '', application: 'Turbo-alternateur',
+      service: 'spare_parts', urgency: 'normal', desired_date: '', description: 'Quotation for a spare set of HS journal bearings and thrust pads.',
+      status: 'in_progress', notes: 'Plan de l’appareil demandé au client pour identifier les références.', assigned_to: 4, created_at: day(-6) + 'T14:40:00Z' },
+    { id: 3, number: `RFQ-${year}-0003`, company: 'Gulf Demo Refining', contact_name: 'Ms. Garcia', email: 'maint@gulf-demo.example', phone: '+1 713 000 0000',
+      country: 'US', location: 'Houston, TX', manufacturer: 'Lufkin', model: 'HS-420', serial: 'DM-2017-09901', application: 'Compresseur centrifuge',
+      service: 'repair', urgency: 'emergency', desired_date: day(3), description: 'Unit down since last week, HS pinion damaged. Need urgent repair or exchange pinion and field service for reassembly.',
+      status: 'quoted', notes: 'Devis atelier + intervention envoyé. Relancer vendredi.', assigned_to: 4, created_at: day(-9) + 'T07:05:00Z' }
+  ];
+
   return {
     format: 'fieldservice-export', version: 1, demo: true,
     tables: {
-      users, clients, sites, machines, reports, timesheets, planning,
+      users, clients, sites, machines, reports, timesheets, planning, rfq,
       settings: { company_name: 'Lufkin Gears · Allen Gears (démo)', company_address: '1 rue de l’Exemple\n70000 Démoville', company_contact: '+33 0 00 00 00 00 · service@demo.example', report_prefix: 'RI', logo: '' }
     },
     photos

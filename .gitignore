@@ -1,0 +1,13 @@
+*.pdf
+*.PDF
+*.db
+*.db-*
+*.eps
+*.ai
+*.docx
+*.xlsx
+data/
+uploads/
+logos/
+*sauvegarde*.json
+field-service-sauvegarde-*.json

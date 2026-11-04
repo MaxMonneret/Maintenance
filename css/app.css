@@ -552,3 +552,16 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .demo-accounts { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .demo-accounts > span { font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .demo-accounts .profile { padding: 9px 12px; }
+
+/* ---- Demandes de devis ---- */
+.badge.rq-new { background: var(--info-soft); color: var(--info); }
+.badge.rq-in_progress { background: var(--warn-soft); color: var(--warn); }
+.badge.rq-quoted { background: var(--accent-soft); color: var(--accent); }
+.badge.rq-won { background: var(--ok-soft); color: var(--ok); }
+.badge.rq-lost { background: var(--surface-2); color: var(--muted); }
+.badge.ru-normal { background: var(--surface-2); color: var(--muted); }
+.badge.ru-urgent { background: var(--warn-soft); color: var(--warn); }
+.badge.ru-emergency { background: var(--danger-soft); color: var(--danger); }
+.nav a.nav-ext { margin-top: 10px; border-top: 1px solid rgba(255,255,255,.08); border-radius: 0 0 10px 10px; padding-top: 14px; font-size: 14px; color: #9fbcb6; }
+.login-art .site-link { position: relative; z-index: 1; align-self: flex-start; color: #fff; font-weight: 600; padding: 8px 14px; border: 1px solid rgba(255,255,255,.3); border-radius: 10px; background: rgba(255,255,255,.06); display: inline-flex; gap: 8px; align-items: center; }
+.login-art .site-link:hover { background: rgba(255,255,255,.14); }

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1c2b25">
+  <title>Demande de devis – Lufkin Gears · Allen Gears (prototype)</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../icons/icon-192.png">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+<main>
+  <section class="hero small" style="--hero-img:url(../img/demo/roulement-rotule-en-place.jpg)">
+    <div class="wrap">
+      <span class="eyebrow">Demande de devis</span>
+      <h1>Parlez-nous de votre besoin</h1>
+      <p class="lead">Plus votre demande est précise (matériel, n° de série, symptômes), plus notre réponse sera rapide.</p>
+    </div>
+    <span class="credit">Photo : Falk2, CC BY-SA 4.0</span>
+  </section>
+
+  <section class="s">
+    <div class="wrap devis-grid">
+      <div>
+        <form id="rfq-form" class="form" autocomplete="on">
+          <fieldset>
+            <legend>Vos coordonnées</legend>
+            <label>Société *<input name="company" required autocomplete="organization"></label>
+            <label>Nom et prénom *<input name="contact_name" required autocomplete="name"></label>
+            <label>E-mail<input name="email" type="email" autocomplete="email"></label>
+            <label>Téléphone<input name="phone" type="tel" autocomplete="tel"></label>
+            <label>Pays<input name="country" autocomplete="country-name" placeholder="France"></label>
+            <label>Lieu de l’installation<input name="location" placeholder="Ville, site"></label>
+          </fieldset>
+          <fieldset>
+            <legend>Votre besoin</legend>
+            <label>Prestation *<select name="service" required>
+              <option value="field_service">Intervention sur site</option>
+              <option value="inspection">Inspection / expertise</option>
+              <option value="repair">Réparation / révision</option>
+              <option value="spare_parts">Pièces de rechange</option>
+              <option value="upgrade">Modernisation / re-rating</option>
+              <option value="training">Formation / contrat de maintenance</option>
+              <option value="other">Autre</option>
+            </select></label>
+            <label>Urgence<select name="urgency">
+              <option value="normal">Normale</option>
+              <option value="urgent">Urgente (sous quelques jours)</option>
+              <option value="emergency">Machine arrêtée</option>
+            </select></label>
+            <label>Date souhaitée<input name="desired_date" type="date"></label>
+          </fieldset>
+          <fieldset>
+            <legend>Votre matériel</legend>
+            <label>Constructeur<select name="manufacturer">
+              <option value="">—</option><option>Lufkin</option><option>Allen Gears</option><option>Comélor</option><option>Autre constructeur</option>
+            </select></label>
+            <label>Modèle<input name="model" placeholder="Ex. : PG-500"></label>
+            <label>N° de série / matricule<input name="serial" placeholder="Plaque signalétique"></label>
+            <label>Application<input name="application" placeholder="Ex. : compresseur, broyeur, propulsion"></label>
+            <label class="full">Description de la demande *<textarea name="description" required placeholder="Symptômes, historique, conditions d’accès, pièces concernées…"></textarea></label>
+            <label class="consent full"><input type="checkbox" required> J’accepte que les informations saisies soient utilisées pour traiter ma demande et me recontacter.</label>
+          </fieldset>
+          <div class="full"><button class="s-btn" type="submit">Envoyer ma demande</button></div>
+        </form>
+        <div id="rfq-msg" class="msg"></div>
+      </div>
+      <aside class="aside">
+        <div class="card">
+          <h3>Ce qui nous aide</h3>
+          <ul class="checks">
+            <li>Photo de la plaque signalétique</li>
+            <li>N° de série et de commande d’origine</li>
+            <li>Symptômes : bruit, vibrations, températures, fuites</li>
+            <li>Dates d’arrêt possibles</li>
+          </ul>
+        </div>
+        <div class="card" style="margin-top:18px;background:#1c2b25;color:#fff;border:0">
+          <h3 style="color:#fff">Machine à l’arrêt ?</h3>
+          <p style="color:#c9dbd6">Choisissez « Machine arrêtée » dans l’urgence : votre demande est traitée en priorité.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+<script type="module" src="site.js"></script>
+</body>
+</html>

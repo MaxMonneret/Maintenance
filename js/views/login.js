@@ -19,6 +19,7 @@ export async function renderLogin(root, onSuccess) {
           <h1>${getLang() === 'en' ? 'Field service reports, timesheets and installed base — in one place.' : 'Rapports d’intervention, heures et base installée, au même endroit.'}</h1>
           <p>${getLang() === 'en' ? 'Built for technicians on site: tablet, phone or PC.' : 'Pensé pour les techniciens sur site : tablette, téléphone ou PC.'}</p>
         </div>
+        <a class="site-link" href="site/index.html">${icon('building')} ${esc(t('nav_site'))} →</a>
         <div class="feat">
           <span>${icon('report')} ${esc(t('nav_reports'))}</span>
           <span>${icon('clock')} ${esc(t('nav_hours'))}</span>
