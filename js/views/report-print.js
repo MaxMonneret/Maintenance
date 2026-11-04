@@ -24,7 +24,8 @@ export async function renderReportPrint(view, id) {
 
   /* Contenu d'une section ; renvoie '' si vide */
   const body = s => {
-    const rows = isTableKind(s.kind) ? (s.rows || []).filter(x => x.some(c => c)) : [];
+    // Mesures : une ligne ne compte que si elle a une valeur (les libellés de la trame sont pré-remplis)
+    const rows = isTableKind(s.kind) ? (s.rows || []).filter(x => s.kind === 'measures' ? x.slice(1).some(c => c) : x.some(c => c)) : [];
     const ph = (s.photos || []).filter(pid => photos.has(pid));
     if (!s.text && !rows.length && !ph.length) return '';
     return `

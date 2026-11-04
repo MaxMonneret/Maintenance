@@ -1,10 +1,11 @@
-import { api } from '../api.js';
+import { api, LOCAL } from '../api.js';
 import { t, setLang, getLang, LANGS } from '../i18n.js';
-import { icon, esc, $, toastError } from '../ui.js';
+import { icon, esc, $, toastError, avatar, countryFlag, confirmBox } from '../ui.js';
 
 export async function renderLogin(root, onSuccess) {
-  let pub = {};
+  let pub = {}, profiles = [];
   try { pub = await api.publicSettings(); } catch {}
+  if (LOCAL) try { profiles = await api.profiles(); } catch {}
   const draw = () => {
     root.innerHTML = `
     <div class="login">
@@ -31,6 +32,23 @@ export async function renderLogin(root, onSuccess) {
         </svg>
       </section>
       <section class="login-form">
+        ${LOCAL ? `
+        <div class="login-box">
+          ${pub.logo ? `<img class="company-logo" src="${esc(pub.logo)}" alt="">` : ''}
+          <div class="row" style="justify-content:space-between">
+            <h1>${esc(t('choose_profile'))}</h1>
+            <select class="inline" id="lang" style="min-width:0;height:36px">
+              ${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === getLang() ? 'selected' : ''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="profiles">
+            ${profiles.map(u => `<button class="profile" data-email="${esc(u.email)}">${avatar(u.name)}
+              <span><strong>${esc(u.name)}</strong><small>${esc(t('role_' + u.role))} · ${countryFlag(u.country)} ${esc(u.country || '')}</small></span>
+              ${icon('right')}</button>`).join('')}
+          </div>
+          <p class="hint">${esc(t('demo_hint'))}</p>
+          <button class="btn sm ghost" id="reset-demo" style="align-self:flex-start">${esc(t('demo_reset'))}</button>
+        </div>` : `
         <form class="login-box" autocomplete="on">
           ${pub.logo ? `<img class="company-logo" src="${esc(pub.logo)}" alt="">` : ''}
           <div class="row" style="justify-content:space-between">
@@ -43,10 +61,21 @@ export async function renderLogin(root, onSuccess) {
           <label class="field"><span>${esc(t('login_pass'))}</span><input type="password" name="password" autocomplete="current-password" required></label>
           <button class="btn primary lg" type="submit">${esc(t('login_btn'))}</button>
           <p class="hint">${esc(t('login_hint'))}</p>
-        </form>
+        </form>`}
       </section>
     </div>`;
     $('#lang', root).addEventListener('change', e => { setLang(e.target.value); draw(); });
+    if (LOCAL) {
+      root.querySelector('.profiles').addEventListener('click', async e => {
+        const b = e.target.closest('[data-email]'); if (!b) return;
+        try { await api.login(b.dataset.email); await onSuccess(); } catch (err) { toastError(err); }
+      });
+      $('#reset-demo', root).addEventListener('click', async () => {
+        if (!(await confirmBox(t('demo_reset_confirm'), t('demo_reset')))) return;
+        await api.resetDemo(); location.reload();
+      });
+      return;
+    }
     $('form', root).addEventListener('submit', async e => {
       e.preventDefault();
       const f = e.target;

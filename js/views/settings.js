@@ -88,7 +88,8 @@ export async function renderSettings(view) {
       <p class="muted">${esc(t(LOCAL ? 'backup_hint_local' : 'backup_hint_server'))}</p>
       <div class="row" style="gap:10px;flex-wrap:wrap">
         <button class="btn primary" id="bk-export">${icon('download')} ${esc(t('backup_export'))}</button>
-        ${LOCAL ? `<label class="btn">${icon('plus')} ${esc(t('backup_import'))}<input type="file" accept=".json,application/json" hidden id="bk-import"></label>` : ''}
+        ${LOCAL && admin ? `<label class="btn">${icon('plus')} ${esc(t('backup_import'))}<input type="file" accept=".json,application/json" hidden id="bk-import"></label>
+          <button class="btn ghost" id="bk-reset">${esc(t('demo_reset'))}</button>` : ''}
         <span class="muted" id="bk-state"></span>
       </div>
     </section>` : ''}
@@ -103,6 +104,12 @@ export async function renderSettings(view) {
       $('#bk-state', view).textContent = `${data.tables.reports.length} ${t('reports').toLowerCase()} · ${data.photos.length} photos`;
     } catch (e) { toastError(e); $('#bk-state', view).textContent = ''; }
     bkExport.disabled = false;
+  });
+  const bkReset = $('#bk-reset', view);
+  if (bkReset) bkReset.addEventListener('click', async () => {
+    const { confirmBox } = await import('../ui.js');
+    if (!(await confirmBox(t('demo_reset_confirm'), t('demo_reset')))) return;
+    await api.resetDemo(); location.hash = '#/'; location.reload();
   });
   const bkImport = $('#bk-import', view);
   if (bkImport) bkImport.addEventListener('change', async e => {

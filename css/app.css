@@ -461,3 +461,11 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .grid-table.k-journal td:nth-child(3) { width: 90px; }
 .site-note { border: 1.5px solid var(--accent); }
 .btn.busy { opacity: .6; pointer-events: none; }
+
+/* Version en ligne : choix du profil */
+.profiles { display: flex; flex-direction: column; gap: 8px; }
+.profile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.profile:hover { border-color: var(--accent); background: var(--accent-soft); }
+.profile > span:not(.avatar) { flex: 1; display: flex; flex-direction: column; }
+.profile .avatar { flex: none; }
+.profile small { color: var(--muted); font-size: 13px; }

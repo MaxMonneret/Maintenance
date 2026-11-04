@@ -5,6 +5,7 @@
  * Utilisée à la place de api.js par le script build-github.mjs.
  */
 export const LOCAL = true;
+import { buildDemo } from './demo-data.js';
 
 const DB_NAME = 'fieldservice';
 let idb = null, db = null;
@@ -34,13 +35,33 @@ async function load() {
   if (db) return db;
   idb = await openIdb();
   db = (await idbGet('kv', 'db')) || empty();
-  if (!db.users.length) {
-    const lang = (navigator.language || 'fr').slice(0, 2) === 'en' ? 'en' : 'fr';
-    db.users.push({ id: nextId('users'), name: lang === 'en' ? 'Technician' : 'Technicien', email: 'local', role: 'admin',
-      country: lang === 'en' ? 'UK' : 'FR', lang, active: 1, must_change: 0 });
-    await persist();
-  }
+  // Premier lancement (ou ancienne version vide avec le seul profil « Technicien ») : données de démonstration
+  const blank = !db.reports.length && !db.machines.length && db.users.every(u => u.email === 'local');
+  if (!db.users.length || blank) await loadData(buildDemo());
   return db;
+}
+
+/* Remplace toutes les données de l'appareil par un fichier d'export (ou le jeu de démonstration) */
+async function loadData(file) {
+  const photos = file.photos || [];
+  await tx('photos', 'readwrite', s => s.clear());
+  for (const p of photos) if (p.data) await idbPut('photos', p.id, p.data);
+  const t = file.tables || {};
+  db = { ...empty(), ...t, settings: { ...empty().settings, ...(t.settings || {}) }, photos: photos.map(({ data, ...meta }) => meta), seq: {},
+    demo: !!file.demo };
+  if (!db.users.some(u => u.role === 'admin' && u.active)) {
+    db.users.push({ id: nextId('users'), name: 'Administrateur', email: 'admin', role: 'admin', country: 'FR', lang: 'fr', active: 1 });
+  }
+  setSession(null);
+  await persist();
+}
+
+/* ---------- Profil courant (choisi sur l'écran d'accueil, sans mot de passe) ---------- */
+const SESSION_KEY = 'fs_local_user';
+let currentId = Number(localStorage.getItem(SESSION_KEY)) || null;
+function setSession(id) {
+  currentId = id;
+  try { id ? localStorage.setItem(SESSION_KEY, String(id)) : localStorage.removeItem(SESSION_KEY); } catch {}
 }
 let saving = Promise.resolve();
 function persist() { saving = saving.then(() => idbPut('kv', 'db', db)); return saving; }
@@ -50,7 +71,14 @@ const now = () => new Date().toISOString();
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
 const pick = (o, keys) => Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k] === '' ? null : o[k]]));
 const clone = x => JSON.parse(JSON.stringify(x));
-const me = () => db.users[0];
+const me = () => {
+  const u = db.users.find(x => x.id === currentId && x.active);
+  if (!u) fail(401, 'Choisissez un profil');
+  return u;
+};
+const isManager = () => ['manager', 'admin'].includes(me().role);
+const isAdmin = () => me().role === 'admin';
+const canEdit = r => isManager() || (r.status !== 'validated' && (r.created_by === me().id || (r.technicians || []).includes(me().id)));
 const publicUser = u => u && ({ id: u.id, name: u.name, email: u.email, role: u.role, country: u.country,
   lang: u.lang, active: !!u.active, must_change: false });
 const byId = (table, id) => db[table].find(x => x.id === Number(id));
@@ -118,6 +146,7 @@ const crudBase = table => ({
   },
   async create(data) {
     await load();
+    if (table !== 'machines' && !isManager()) fail(403, 'Droits insuffisants');
     const d = pick(data, FIELDS[table]);
     if (table === 'clients' && !d.name) fail(400, 'Nom obligatoire');
     if (table === 'sites' && (!d.name || !d.client_id)) fail(400, 'Client et nom obligatoires');
@@ -128,14 +157,23 @@ const crudBase = table => ({
   async update(id, data) {
     await load();
     const x = byId(table, id); if (!x) fail(404, 'Introuvable');
+    if ((table !== 'machines' || data.archived) && !isManager()) fail(403, 'Droits insuffisants');
     Object.assign(x, pick(data, FIELDS[table])); await persist(); return clone(x);
   },
   async remove(id) { return this.update(id, { archived: 1 }); }
 });
 
 export const api = {
-  async login() { await load(); return { user: publicUser(me()) }; },
-  async logout() { location.reload(); return { ok: true }; },
+  async login(email) {
+    await load();
+    const u = db.users.find(x => x.email === email && x.active);
+    if (!u) fail(401, 'Profil introuvable');
+    setSession(u.id); return { user: publicUser(u) };
+  },
+  async logout() { setSession(null); return { ok: true }; },
+  async profiles() { await load(); return clone(db.users.filter(u => u.active).map(publicUser)); },
+  async isDemo() { await load(); return !!db.demo; },
+  async resetDemo() { await load(); await loadData(buildDemo()); return { ok: true }; },
   async me() { await load(); return { user: publicUser(me()), settings: clone(db.settings) }; },
   async updateMe(data) { await load(); Object.assign(me(), pick(data, ['name', 'lang', 'country'])); await persist(); return { user: publicUser(me()) }; },
   async publicSettings() { await load(); return { company_name: db.settings.company_name, logo: db.settings.logo }; },
@@ -143,6 +181,7 @@ export const api = {
     async get() { await load(); return clone(db.settings); },
     async save(data) {
       await load();
+      if (!isAdmin()) fail(403, 'Réservé aux administrateurs');
       for (const k of ['company_name', 'company_address', 'company_contact', 'report_prefix', 'logo', 'accent']) {
         if (data[k] !== undefined) db.settings[k] = String(data[k] ?? '');
       }
@@ -171,6 +210,7 @@ export const api = {
     async get(id) { await load(); return publicUser(byId('users', id)); },
     async create(data) {
       await load();
+      if (!isAdmin()) fail(403, 'Réservé aux administrateurs');
       if (!data.name) fail(400, 'Nom obligatoire');
       const u = { ...pick(data, ['name', 'email', 'role', 'country', 'lang']), id: nextId('users'), active: 1, must_change: 0 };
       if (!u.email) u.email = u.name.toLowerCase().replace(/\s+/g, '.');
@@ -179,6 +219,7 @@ export const api = {
     async update(id, data) {
       await load();
       const u = byId('users', id); if (!u) fail(404, 'Introuvable');
+      if (!isAdmin()) fail(403, 'Réservé aux administrateurs');
       const d = pick(data, ['name', 'email', 'role', 'country', 'lang']);
       if (data.active !== undefined) d.active = data.active ? 1 : 0;
       if (u.id === me().id && (d.role && d.role !== 'admin' || d.active === 0)) fail(400, 'Vous ne pouvez pas retirer vos propres droits');
@@ -207,7 +248,7 @@ export const api = {
       out.photos = await Promise.all(db.photos.filter(p => p.report_id === r.id).map(photoOut));
       out.hours = db.timesheets.filter(t => t.report_id === r.id).sort((a, b) => a.date.localeCompare(b.date))
         .map(t => ({ ...t, user_name: (byId('users', t.user_id) || {}).name }));
-      out.can_edit = true;
+      out.can_edit = canEdit(r);
       return out;
     },
     async create(b) {
@@ -221,6 +262,8 @@ export const api = {
     async update(id, b) {
       await load();
       const r = byId('reports', id); if (!r) fail(404, 'Rapport introuvable');
+      if (!canEdit(r)) fail(403, 'Ce rapport ne peut plus être modifié');
+      if (b.status === 'validated' && !isManager()) fail(403, 'Seul un responsable peut valider');
       Object.assign(r, pick(b, ['machine_id', 'date', 'end_date', 'type', 'title', 'signer_name', 'signature', 'signed_at']));
       for (const k of ['technicians', 'sections', 'header']) if (b[k]) r[k] = b[k];
       if (b.status) { r.status = b.status; r.validated_by = b.status === 'validated' ? me().id : null; }
@@ -228,6 +271,8 @@ export const api = {
     },
     async remove(id) {
       await load();
+      const r = byId('reports', id); if (!r) fail(404, 'Rapport introuvable');
+      if (!canEdit(r) || (r.status !== 'draft' && !isManager())) fail(403, 'Seuls les brouillons peuvent être supprimés');
       for (const p of db.photos.filter(p => p.report_id === Number(id))) await idbDel('photos', p.id);
       db.photos = db.photos.filter(p => p.report_id !== Number(id));
       db.reports = db.reports.filter(r => r.id !== Number(id));
@@ -259,7 +304,7 @@ export const api = {
   timesheets: {
     async list(q = {}) {
       await load();
-      const uid = q.user_id === 'all' ? null : (q.user_id ? Number(q.user_id) : me().id);
+      const uid = !isManager() ? me().id : q.user_id === 'all' ? null : (q.user_id ? Number(q.user_id) : me().id);
       const from = q.from || '0000-01-01', to = q.to || '9999-12-31';
       return clone(db.timesheets.filter(t => t.date >= from && t.date <= to && (!uid || t.user_id === uid)).map(t => {
         const u = byId('users', t.user_id) || {}; const r = byId('reports', t.report_id);
@@ -272,22 +317,28 @@ export const api = {
       await load();
       const hours = Number(String(b.hours).replace(',', '.'));
       if (!b.date || !(hours > 0 && hours <= 24)) fail(400, 'Date et durée (0 à 24 h) obligatoires');
-      const t = { id: nextId('timesheets'), user_id: b.user_id ? Number(b.user_id) : me().id, date: b.date, kind: b.kind || 'site', hours,
+      const t = { id: nextId('timesheets'), user_id: isManager() && b.user_id ? Number(b.user_id) : me().id, date: b.date, kind: b.kind || 'site', hours,
         report_id: b.report_id ? Number(b.report_id) : null, note: b.note || null, status: 'entered', validated_by: null, created_at: now() };
       db.timesheets.push(t); await persist(); return clone(t);
     },
     async update(id, b) {
       await load();
       const t = byId('timesheets', id); if (!t) fail(404, 'Introuvable');
+      if (!isManager() && (t.user_id !== me().id || t.status === 'validated')) fail(403, 'Ligne non modifiable');
       Object.assign(t, pick(b, ['date', 'kind', 'note']));
       if (b.report_id !== undefined) t.report_id = b.report_id ? Number(b.report_id) : null;
       if (b.hours !== undefined) t.hours = Number(String(b.hours).replace(',', '.'));
-      if (b.status) t.status = b.status;
+      if (b.status && isManager()) t.status = b.status;
       await persist(); return clone(t);
     },
-    async remove(id) { await load(); db.timesheets = db.timesheets.filter(t => t.id !== Number(id)); await persist(); return { ok: true }; },
+    async remove(id) {
+      await load();
+      const t = byId('timesheets', id); if (!t) fail(404, 'Introuvable');
+      if (!isManager() && (t.user_id !== me().id || t.status === 'validated')) fail(403, 'Ligne non modifiable');
+      db.timesheets = db.timesheets.filter(x => x.id !== Number(id)); await persist(); return { ok: true };
+    },
     async validate(userId, from, to) {
-      await load(); let n = 0;
+      await load(); if (!isManager()) fail(403, 'Seul un responsable peut valider'); let n = 0;
       db.timesheets.forEach(t => { if (t.user_id === Number(userId) && t.date >= from && t.date <= to) { t.status = 'validated'; t.validated_by = me().id; n++; } });
       await persist(); return { updated: n };
     }
@@ -296,18 +347,9 @@ export const api = {
   /* ---------- Sauvegarde : import d'un fichier exporté (remplace les données de cet appareil) ---------- */
   async importAll(file) {
     await load();
+    if (!isAdmin()) fail(403, 'Réservé aux administrateurs');
     if (!file || file.format !== 'fieldservice-export') fail(400, 'Fichier de sauvegarde invalide');
-    const photos = file.photos || [];
-    await tx('photos', 'readwrite', s => s.clear());
-    for (const p of photos) if (p.data) await idbPut('photos', p.id, p.data);
-    const keepMe = { ...me() };
-    db = { ...empty(), ...file.tables, settings: { ...empty().settings, ...(file.tables.settings || {}) },
-      photos: photos.map(({ data, ...meta }) => meta), seq: {} };
-    // l'utilisateur de cet appareil devient l'administrateur local
-    if (!db.users.some(u => u.role === 'admin' && u.active)) db.users.unshift({ ...keepMe, id: nextId('users') });
-    const adminIdx = db.users.findIndex(u => u.role === 'admin' && u.active);
-    if (adminIdx > 0) db.users.unshift(db.users.splice(adminIdx, 1)[0]);
-    await persist();
-    return { reports: db.reports.length, machines: db.machines.length, photos: photos.length };
+    await loadData({ ...file, demo: false });
+    return { reports: db.reports.length, machines: db.machines.length, photos: (file.photos || []).length };
   }
 };
