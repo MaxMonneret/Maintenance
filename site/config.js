@@ -6,7 +6,7 @@
  *  - phone    : numéro affiché pour les urgences (vide = non affiché).
  */
 export const SITE = {
-  rfqEmail: '',
+  rfqEmail: 'maxrallye@hotmail.fr',
   phone: '',
   name: 'Lufkin Gears · Allen Gears – Service'
 };
