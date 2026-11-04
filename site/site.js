@@ -62,24 +62,28 @@ if (form) {
     const subject = `Demande de devis ${number} – ${data.company}${data.urgency === 'emergency' ? ' – MACHINE ARRÊTÉE' : ''}`;
     let mode = '';   // 'sent' (envoi direct), 'mailto' (messagerie du visiteur) ou ''
     if (SITE.rfqEmail && !data._honey) {
-      // a) Envoi direct via FormSubmit, sans passer par la messagerie du visiteur
-      if (SITE.directSend) {
+      // a) Envoi direct, sans passer par la messagerie du visiteur : Web3Forms (si clé), sinon FormSubmit
+      const fields = {
+        'N° de demande': number || '—', 'Société': data.company, 'Contact': data.contact_name, 'E-mail': data.email || '—', 'Téléphone': data.phone || '—',
+        'Lieu': [data.location, data.country].filter(Boolean).join(', ') || '—', 'Prestation': label('service'), 'Urgence': label('urgency'),
+        'Date souhaitée': data.desired_date || '—', 'Matériel': [data.manufacturer, data.model].filter(Boolean).join(' ') || '—',
+        'N° de série': data.serial || '—', 'Application': data.application || '—', 'Description': data.description
+      };
+      const post = async (url, payload) => {
+        const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 15000);
         try {
-          const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(SITE.rfqEmail)}`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({
-              _subject: subject, _template: 'table', _captcha: 'false', ...(data.email ? { _replyto: data.email } : {}),
-              'N° de demande': number || '—', 'Société': data.company, 'Contact': data.contact_name, 'E-mail': data.email || '—', 'Téléphone': data.phone || '—',
-              'Lieu': [data.location, data.country].filter(Boolean).join(', ') || '—', 'Prestation': label('service'), 'Urgence': label('urgency'),
-              'Date souhaitée': data.desired_date || '—', 'Matériel': [data.manufacturer, data.model].filter(Boolean).join(' ') || '—',
-              'N° de série': data.serial || '—', 'Application': data.application || '—', 'Description': data.description
-            })
-          });
+          const res = await fetch(url, { method: 'POST', signal: ctrl.signal, headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
           const out = await res.json().catch(() => ({}));
-          if (res.ok && String(out.success) === 'true') mode = 'sent';
-          else console.warn('FormSubmit :', out.message || res.status);
-        } catch (err) { console.warn('Envoi direct impossible :', err); }
-      }
+          if (res.ok && String(out.success) === 'true') return true;
+          console.warn('Envoi refusé :', url, out.message || res.status);
+        } catch (err) { console.warn('Envoi direct impossible :', url, err); }
+        finally { clearTimeout(timer); }
+        return false;
+      };
+      if (SITE.directSend && SITE.web3formsKey && await post('https://api.web3forms.com/submit',
+        { access_key: SITE.web3formsKey, subject, from_name: 'Site – demande de devis', ...(data.email ? { replyto: data.email } : {}), ...fields })) mode = 'sent';
+      if (SITE.directSend && !mode && await post(`https://formsubmit.co/ajax/${encodeURIComponent(SITE.rfqEmail)}`,
+        { _subject: subject, _template: 'table', _captcha: 'false', ...(data.email ? { _replyto: data.email } : {}), ...fields })) mode = 'sent';
       // b) Secours : messagerie du visiteur avec la demande pré-remplie
       if (!mode) {
         const body = [`Demande de devis ${number}`, '', `Société : ${data.company}`, `Contact : ${data.contact_name}`, `E-mail : ${data.email}`, `Téléphone : ${data.phone}`,

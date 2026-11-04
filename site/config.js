@@ -9,9 +9,13 @@
  *               sans ouvrir la messagerie du visiteur. La 1re demande déclenche un e-mail d'activation
  *               à rfqEmail : cliquer sur « Activate Form » une seule fois.
  */
+/*  - web3formsKey : clé d'accès Web3Forms (web3forms.com, gratuit) – service d'envoi utilisé en priorité.
+ *                   Obtenir la clé : saisir l'adresse de réception sur https://web3forms.com, la clé arrive par e-mail.
+ */
 export const SITE = {
   rfqEmail: 'maxrallye@hotmail.fr',
   directSend: true,
+  web3formsKey: '',
   phone: '',
   name: 'Lufkin Gears · Allen Gears – Service'
 };
