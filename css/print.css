@@ -3,7 +3,7 @@ body.printing { background: #e9edeb; }
 .print-toolbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; align-items: center; padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
 
 .sheet {
-  --p-ink: #14211e; --p-muted: #5f6f6a; --p-line: #d9e1de; --p-brand: #05322b; --p-accent: #02a37e;
+  --p-ink: #14211e; --p-muted: #5f6f6a; --p-line: #d9e1de; --p-brand: #1c2b25; --p-accent: #289792;
   width: 210mm; min-height: 297mm; margin: 24px auto; padding: 16mm 15mm 14mm; background: #fff; color: var(--p-ink);
   box-shadow: 0 10px 40px rgba(0, 0, 0, .12); font-size: 10pt; line-height: 1.45; color-scheme: light;
 }
@@ -80,3 +80,6 @@ body.printing { background: #e9edeb; }
 .p-table.k-equipment td, .p-table.k-replaced td { padding: 1.6mm 2mm; }
 .p-table.k-journal td:first-child { white-space: nowrap; width: 22mm; }
 .p-table.k-journal td:last-child, .p-table.k-journal th:last-child { width: 18mm; text-align: right; }
+/* Logo de marque (large) au-dessus des coordonnées de l'entreprise */
+.p-company { flex-direction: column; gap: 3mm; }
+.p-company img { max-width: 90mm; max-height: 14mm; }

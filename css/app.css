@@ -1,13 +1,13 @@
 /* ==========================================================
    Field Service – feuille de style
-   Palette : vert profond (marque) + vert vif (accent)
+   Palette : couleurs Lufkin Gears / Allen Gears (vert très foncé #1c2b25 + sarcelle #289792)
    ========================================================== */
 :root {
-  --brand: #05322b;
-  --brand-2: #0a4a3f;
-  --accent: #02a37e;
+  --brand: #1c2b25;
+  --brand-2: #25392f;
+  --accent: #289792;
   --accent-ink: #ffffff;
-  --accent-soft: #e2f5ef;
+  --accent-soft: #e2f3f2;
   --bg: #f3f5f4;
   --surface: #ffffff;
   --surface-2: #f7f9f8;
@@ -34,7 +34,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --accent: #2fd1a4; --accent-ink: #04211b; --accent-soft: #11342c;
+    --accent: #4fc3bd; --accent-ink: #0b1f1d; --accent-soft: #12302e;
     --bg: #0b1311; --surface: #121c19; --surface-2: #17231f; --ink: #e6efec; --muted: #93a7a1; --line: #24332f;
     --danger: #ff7b6e; --danger-soft: #3a1c19; --warn: #f0b354; --warn-soft: #3a2c13; --info: #7fb2ec; --info-soft: #172a3d;
     --ok: #5fd39c; --ok-soft: #12301f; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
@@ -75,7 +75,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .brand { display: flex; align-items: center; gap: 12px; padding: 4px 10px 22px; }
 .brand-mark {
-  width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(140deg, #02c497, #05735c);
+  width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(140deg, #4fc3bd, #1f7773);
   display: grid; place-items: center; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
 }
 .brand-mark .ic { width: 22px; height: 22px; }
@@ -87,7 +87,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 500; transition: background .15s, color .15s;
 }
 .nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
-.nav a.active { background: rgba(2, 196, 151, .16); color: #fff; }
+.nav a.active { background: rgba(79, 195, 189, .18); color: #fff; }
 .nav a.active .ic { color: #2fe0b1; }
 .sidebar-foot { margin-top: auto; border-top: 1px solid rgba(255,255,255,.08); padding-top: 14px; }
 .me { display: flex; align-items: center; gap: 10px; padding: 6px 8px; }
@@ -156,17 +156,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Bandeau d'accueil */
 .hero {
-  background: linear-gradient(120deg, var(--brand) 0%, #0b5a4b 70%, #0d7a63 100%); color: #fff; border-radius: 18px;
+  background: linear-gradient(100deg, var(--brand) 0%, var(--brand) 42%, rgba(28,43,37,.78) 62%, rgba(28,43,37,.25) 100%),
+    url(../img/photos/reducteur-lufkin.jpg) right 30% / auto 160% no-repeat, var(--brand);
+  color: #fff; border-radius: 18px; min-height: 150px;
   padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   margin-bottom: 20px; position: relative; overflow: hidden;
 }
 .hero::after { content: ""; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%;
   border: 36px solid rgba(255,255,255,.05); }
 .hero h1 { color: #fff; }
-.hero p { color: #b9d6cd; margin-top: 4px; }
+.hero p { color: #b9cdc8; margin-top: 4px; }
 .hero .actions { display: flex; gap: 10px; flex-wrap: wrap; position: relative; z-index: 1; }
 .hero .btn { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; }
-.hero .btn.primary { background: #02c497; border-color: #02c497; color: #04241d; }
+.hero .btn.primary { background: #4fc3bd; border-color: #4fc3bd; color: #0b1f1d; }
 
 /* ---------- Listes ---------- */
 .list { display: flex; flex-direction: column; }
@@ -371,13 +373,13 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 
 /* ---------- Connexion ---------- */
 .login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
-.login-art { background: radial-gradient(1200px 600px at -10% 120%, #0e7a62 0%, transparent 60%), linear-gradient(150deg, #05322b, #072a24 60%, #041c18); color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
-.login-art .rings { position: absolute; right: -140px; bottom: -140px; width: 520px; height: 520px; opacity: .14; }
+.login-art { background: linear-gradient(160deg, rgba(28,43,37,.96) 0%, rgba(28,43,37,.82) 45%, rgba(20,70,66,.55) 100%), url(../img/photos/reducteur-double-helicoidal.jpg) center / cover no-repeat, #1c2b25; color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.login-art .rings { display: none; }
 .login-art h1 { font-size: 40px; max-width: 460px; color: #fff; font-weight: 650; letter-spacing: -.02em; }
 .login-art p { color: #a7c8be; max-width: 420px; margin-top: 14px; font-size: 16px; }
 .login-art .feat { display: flex; gap: 22px; flex-wrap: wrap; color: #cfe3dc; font-size: 14px; }
 .login-art .feat span { display: flex; align-items: center; gap: 8px; }
-.login-art .feat .ic { color: #2fe0b1; }
+.login-art .feat .ic { color: #4fc3bd; }
 .login-form { display: grid; place-items: center; padding: 32px; background: var(--bg); }
 .login-box { width: min(380px, 100%); display: flex; flex-direction: column; gap: 16px; }
 .login-box .company-logo { max-height: 56px; max-width: 220px; object-fit: contain; align-self: flex-start; }
@@ -469,3 +471,13 @@ table.grid-table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .profile > span:not(.avatar) { flex: 1; display: flex; flex-direction: column; }
 .profile .avatar { flex: none; }
 .profile small { color: var(--muted); font-size: 13px; }
+
+/* Logos de la marque */
+.brand-logo { display: block; width: 100%; max-width: 205px; height: auto; }
+.brand.with-logo { flex-direction: column; align-items: flex-start; gap: 8px; padding: 6px 10px 24px; }
+.brand-sub { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8fb0aa; font-weight: 650; }
+.topbar-mark { width: 32px; height: 32px; border-radius: 8px; }
+.login-art .brand-logo { max-width: 340px; }
+.login-art .credits { position: absolute; right: 16px; bottom: 10px; font-size: 10.5px; color: rgba(255,255,255,.45); z-index: 1; }
+.login-art .credits a { color: inherit; text-decoration: underline; }
+.hero .hero-credit { position: absolute; right: 12px; bottom: 6px; font-size: 10px; color: rgba(255,255,255,.5); }

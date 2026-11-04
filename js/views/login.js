@@ -10,9 +10,9 @@ export async function renderLogin(root, onSuccess) {
     root.innerHTML = `
     <div class="login">
       <section class="login-art">
-        <div class="brand" style="padding:0">
-          <div class="brand-mark">${icon('gear')}</div>
-          <div class="brand-text"><strong>${esc(t('app_name'))}</strong><span>${esc(pub.company_name || '')}</span></div>
+        <div class="brand with-logo" style="padding:0">
+          <img class="brand-logo" src="img/logo-white.svg" alt="Lufkin Gears · Allen Gears">
+          <div class="brand-sub">${esc(t('app_name'))}</div>
         </div>
         <div>
           <h1>${getLang() === 'en' ? 'Field service reports, timesheets and installed base — in one place.' : 'Rapports d’intervention, heures et base installée, au même endroit.'}</h1>
@@ -30,11 +30,12 @@ export async function renderLogin(root, onSuccess) {
           }).join('')}
           <circle cx="100" cy="100" r="78"/><circle cx="100" cy="100" r="30"/><circle cx="100" cy="100" r="12"/>
         </svg>
+        <div class="credits">${esc(t('photo_credit'))} : <a href="https://commons.wikimedia.org/wiki/File:Double-helical_gear.jpg" target="_blank" rel="noopener">Parchaco, CC0</a></div>
       </section>
       <section class="login-form">
         ${LOCAL ? `
         <div class="login-box">
-          ${pub.logo ? `<img class="company-logo" src="${esc(pub.logo)}" alt="">` : ''}
+          <img class="company-logo" src="${esc(pub.logo || 'img/logo.svg')}" alt="">
           <div class="row" style="justify-content:space-between">
             <h1>${esc(t('choose_profile'))}</h1>
             <select class="inline" id="lang" style="min-width:0;height:36px">
@@ -50,7 +51,7 @@ export async function renderLogin(root, onSuccess) {
           <button class="btn sm ghost" id="reset-demo" style="align-self:flex-start">${esc(t('demo_reset'))}</button>
         </div>` : `
         <form class="login-box" autocomplete="on">
-          ${pub.logo ? `<img class="company-logo" src="${esc(pub.logo)}" alt="">` : ''}
+          <img class="company-logo" src="${esc(pub.logo || 'img/logo.svg')}" alt="">
           <div class="row" style="justify-content:space-between">
             <h1>${esc(t('login_title'))}</h1>
             <select class="inline" id="lang" style="min-width:0;height:36px">

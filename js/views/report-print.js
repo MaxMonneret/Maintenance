@@ -73,7 +73,7 @@ export async function renderReportPrint(view, id) {
   <article class="sheet">
     <header class="p-head">
       <div class="p-company">
-        ${settings.logo ? `<img src="${esc(settings.logo)}" alt="">` : ''}
+        <img src="${esc(settings.logo || 'img/logo.svg')}" alt="">
         <div><strong>${esc(settings.company_name || '')}</strong>
           <div>${nl2br(settings.company_address)}</div><div>${esc(settings.company_contact || '')}</div></div>
       </div>

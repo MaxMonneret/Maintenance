@@ -226,7 +226,7 @@ export function buildDemo() {
     format: 'fieldservice-export', version: 1, demo: true,
     tables: {
       users, clients, sites, machines, reports, timesheets,
-      settings: { company_name: 'Démo – Field Service', company_address: '1 rue de l’Exemple\n70000 Démoville', company_contact: '+33 0 00 00 00 00 · service@demo.example', report_prefix: 'RI', logo: '' }
+      settings: { company_name: 'Lufkin Gears · Allen Gears (démo)', company_address: '1 rue de l’Exemple\n70000 Démoville', company_contact: '+33 0 00 00 00 00 · service@demo.example', report_prefix: 'RI', logo: '' }
     },
     photos
   };

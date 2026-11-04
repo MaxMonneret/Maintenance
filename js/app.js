@@ -41,9 +41,9 @@ function shell() {
   root.innerHTML = `
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">${icon('gear')}</div>
-          <div class="brand-text"><strong>${esc(t('app_name'))}</strong><span>${esc(s.company_name || '')}</span></div>
+        <div class="brand with-logo">
+          <img class="brand-logo" src="img/logo-white.svg" alt="Lufkin Gears · Allen Gears">
+          <div class="brand-sub">${esc(t('app_name'))}</div>
         </div>
         <nav class="nav">
           ${NAV.map(([k, href, ic, lab]) => `<a href="${href}" data-nav="${k}">${icon(ic)}<span>${esc(t(lab))}</span></a>`).join('')}
@@ -58,7 +58,7 @@ function shell() {
       </aside>
       <div class="main">
         <header class="topbar">
-          <div class="brand-mark">${icon('gear')}</div>
+          <img class="topbar-mark" src="icons/icon-192.png" alt="">
           <strong>${esc(t('app_name'))}</strong>
           <button class="icon-btn" data-logout title="${esc(t('logout'))}">${icon('logout')}</button>
         </header>

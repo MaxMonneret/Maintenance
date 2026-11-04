@@ -12,6 +12,7 @@ export async function renderDashboard(view) {
         <h1>${esc(t('hello'))} ${esc(first)}</h1>
         <p>${esc(fmtDate(todayISO(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</p>
       </div>
+      <span class="hero-credit">${esc(t('photo_credit'))} : Lufkin Industries</span>
       <div class="actions">
         <a class="btn" href="#/hours">${icon('clock')} ${esc(t('new_entry'))}</a>
         <a class="btn primary lg" href="#/reports/new">${icon('plus')} ${esc(t('new_report'))}</a>
