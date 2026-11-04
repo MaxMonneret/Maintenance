@@ -1,0 +1,82 @@
+/* Mise en page du rapport (écran + impression A4) */
+body.printing { background: #e9edeb; }
+.print-toolbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; align-items: center; padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+
+.sheet {
+  --p-ink: #14211e; --p-muted: #5f6f6a; --p-line: #d9e1de; --p-brand: #05322b; --p-accent: #02a37e;
+  width: 210mm; min-height: 297mm; margin: 24px auto; padding: 16mm 15mm 14mm; background: #fff; color: var(--p-ink);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .12); font-size: 10pt; line-height: 1.45; color-scheme: light;
+}
+.sheet .mono { font-family: var(--mono); }
+.sheet .muted { color: var(--p-muted); font-size: 9pt; }
+.p-head { display: flex; justify-content: space-between; gap: 10mm; padding-bottom: 6mm; border-bottom: 2.5px solid var(--p-brand); }
+.p-company { display: flex; gap: 5mm; align-items: flex-start; font-size: 9pt; color: var(--p-muted); }
+.p-company img { max-height: 18mm; max-width: 50mm; object-fit: contain; }
+.p-company strong { display: block; color: var(--p-brand); font-size: 12.5pt; margin-bottom: 1mm; }
+.p-title { text-align: right; font-size: 9.5pt; color: var(--p-muted); }
+.p-doc { text-transform: uppercase; letter-spacing: .08em; font-size: 8.5pt; font-weight: 700; color: var(--p-accent); }
+.p-num { font-family: var(--mono); font-size: 17pt; font-weight: 700; color: var(--p-ink); margin: 1mm 0; }
+.p-badges { display: flex; gap: 2mm; justify-content: flex-end; margin-top: 2mm; }
+.p-badges span { border: 1px solid var(--p-line); border-radius: 4px; padding: .5mm 2.5mm; font-size: 8.5pt; font-weight: 600; color: var(--p-ink); }
+.p-badges .st-validated { background: #e2f4ea; border-color: #b8e0c9; color: #1d7f55; }
+.p-subject { font-size: 15pt; margin: 6mm 0 0; color: var(--p-ink); font-weight: 650; }
+
+.p-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 6mm 0 2mm; }
+.p-box { border: 1px solid var(--p-line); border-radius: 3mm; padding: 3.5mm 4mm; display: flex; flex-direction: column; gap: 2mm; background: #fafcfb; }
+.p-box h3 { font-size: 8pt; text-transform: uppercase; letter-spacing: .07em; color: var(--p-accent); margin: 0 0 .5mm; }
+.p-box div span { display: block; font-size: 7.5pt; color: var(--p-muted); text-transform: uppercase; letter-spacing: .04em; }
+.p-box div strong { font-weight: 600; font-size: 9.5pt; }
+
+.p-section { margin-top: 6mm; break-inside: auto; }
+.p-section h2 { display: flex; align-items: center; gap: 3mm; font-size: 12pt; color: var(--p-brand); padding-bottom: 1.5mm; border-bottom: 1px solid var(--p-line); margin-bottom: 3mm; break-after: avoid; }
+.p-section h2 span { width: 6.5mm; height: 6.5mm; border-radius: 1.6mm; background: var(--p-brand); color: #fff; display: inline-grid; place-items: center; font-size: 9pt; flex: none; }
+.p-text { white-space: normal; }
+.p-table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; font-size: 9.5pt; }
+.p-table th { text-align: left; background: #f0f4f2; color: var(--p-muted); font-size: 8pt; text-transform: uppercase; letter-spacing: .04em; padding: 2mm 3mm; border-bottom: 1px solid var(--p-line); }
+.p-table td { padding: 2mm 3mm; border-bottom: 1px solid var(--p-line); }
+.p-table tr.tot td { font-weight: 700; border-bottom: 0; border-top: 1.5px solid var(--p-ink); }
+.p-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4mm; margin-top: 3mm; }
+.p-photos.one { grid-template-columns: 1fr; max-width: 120mm; }
+.p-photos figure { margin: 0; break-inside: avoid; border: 1px solid var(--p-line); border-radius: 2mm; overflow: hidden; }
+.p-photos img { width: 100%; max-height: 80mm; object-fit: cover; display: block; }
+.p-photos figcaption { padding: 1.5mm 3mm; font-size: 8.5pt; color: var(--p-muted); background: #fafcfb; }
+
+.p-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-top: 8mm; break-inside: avoid; }
+.p-sign img { max-height: 26mm; max-width: 70mm; object-fit: contain; align-self: flex-start; }
+.p-sig-empty { height: 24mm; }
+.p-foot { margin-top: 8mm; padding-top: 3mm; border-top: 1px solid var(--p-line); font-size: 8pt; color: var(--p-muted); text-align: center; }
+
+@media (max-width: 860px) {
+  .sheet { width: 100%; min-height: 0; margin: 0; padding: 18px; box-shadow: none; }
+  .p-info, .p-sign { grid-template-columns: 1fr; }
+  .p-head { flex-direction: column; }
+  .p-title { text-align: left; }
+  .p-badges { justify-content: flex-start; }
+}
+
+@page { size: A4; margin: 12mm 12mm 14mm; }
+@media print {
+  html, body, body.printing { background: #fff !important; }
+  .no-print, .sidebar, .topbar, .bottom-nav, #toasts, .offline-bar { display: none !important; }
+  .main { margin: 0 !important; padding: 0 !important; }
+  .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; font-size: 9.5pt; }
+  .p-info { grid-template-columns: repeat(3, 1fr) !important; }
+  .p-sign { grid-template-columns: 1fr 1fr !important; }
+  .p-head { flex-direction: row !important; }
+  .p-title { text-align: right !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ---- Trame standard « Rapport de visite ou de montage » ---- */
+.p-header { width: 100%; border-collapse: collapse; margin: 6mm 0 0; font-size: 9.5pt; border: 1px solid var(--p-line); }
+.p-header th { width: 52mm; text-align: left; font-weight: 600; color: var(--p-muted); background: #fafcfb; padding: 1.6mm 3mm; border-bottom: 1px solid var(--p-line); vertical-align: top; }
+.p-header td { padding: 1.6mm 3mm; border-bottom: 1px solid var(--p-line); font-weight: 600; }
+.p-band { margin-top: 6mm; padding: 2mm 3mm; background: var(--p-brand); color: #fff; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: .05em; }
+.p-section h2 { text-transform: uppercase; letter-spacing: .02em; }
+.p-sub { margin-top: 4mm; padding-left: 6mm; }
+.p-sub h3 { font-size: 10.5pt; color: var(--p-ink); margin: 0 0 2mm; break-after: avoid; }
+.p-sub h3 span { color: var(--p-accent); font-weight: 700; }
+.p-table.k-equipment, .p-table.k-replaced { font-size: 8.5pt; }
+.p-table.k-equipment td, .p-table.k-replaced td { padding: 1.6mm 2mm; }
+.p-table.k-journal td:first-child { white-space: nowrap; width: 22mm; }
+.p-table.k-journal td:last-child, .p-table.k-journal th:last-child { width: 18mm; text-align: right; }
